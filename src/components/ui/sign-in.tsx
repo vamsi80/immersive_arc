@@ -76,6 +76,19 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                 Sign In
               </button>
             </form>
+            <button
+              type="button"
+              onClick={() => {
+                const form = document.querySelector('form');
+                const emailInput = form?.querySelector<HTMLInputElement>('input[name="email"]');
+                const passwordInput = form?.querySelector<HTMLInputElement>('input[name="password"]');
+                if (emailInput) emailInput.value = 'demo@example.com';
+                if (passwordInput) passwordInput.value = 'demo1234';
+              }}
+              className="text-sm text-violet-400 hover:underline transition-colors"
+            >
+              Use demo account
+            </button>
 
             <div className="animate-element animate-delay-700 relative flex items-center justify-center">
               <span className="w-full border-t border-border"></span>
