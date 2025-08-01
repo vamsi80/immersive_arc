@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export interface Testimonial {
   avatarSrc: string;
@@ -35,6 +36,23 @@ export const SignInPage: React.FC<SignInPageProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const router = useRouter();
+
+  const handleSignIn = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const form = new FormData(e.currentTarget);
+    const email = form.get('email');
+    const password = form.get('password');
+
+    // Simulate auth
+    if (email === 'demo@example.com' && password === 'demo1234') {
+      router.push('/home'); // ✅ Navigate to home
+    } else {
+      alert('Invalid credentials. Use demo@example.com / demo1234');
+    }
+  };
+
   return (
     <div className="h-[100dvh] flex flex-col md:flex-row font-geist w-full">
       {/* Left column: sign-in form */}
@@ -44,7 +62,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
             <h1 className="animate-element animate-delay-100 text-4xl md:text-5xl font-semibold leading-tight">{title}</h1>
             <p className="animate-element animate-delay-200 text-muted-foreground">{description}</p>
 
-            <form className="space-y-5" onSubmit={onSignIn}>
+            <form className="space-y-5" onSubmit={handleSignIn}>
               <div className="animate-element animate-delay-300">
                 <label className="text-sm font-medium text-muted-foreground">Email Address</label>
                 <GlassInputWrapper>
