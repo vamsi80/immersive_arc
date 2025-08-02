@@ -28,33 +28,6 @@ export function SignUpForm({
   const [age, setAge] = useState("");
   const [country, setCountry] = useState("");
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    setLoading(true);
-    const result = await firebaseSignUp(email, password);
-    if (result.success && result.user) {
-      const userId = result.user.uid;
-      const userData = {
-        email: result.user.email,
-        createdAt: new Date().toISOString(),
-      };
-      const firestoreResult = await createUserInFirestore(userId, userData);
-      setLoading(false);
-      if (firestoreResult.success) {
-        router.push("/dashboard");
-      } else {
-        setError("Failed to save user data. Please try again.");
-      }
-    } else {
-      setLoading(false);
-      setError(result.message ?? null);
-    }
-  }
 
   async function handleFinalSignUp(e: React.FormEvent) {
     e.preventDefault();
@@ -73,6 +46,7 @@ export function SignUpForm({
         createdAt: new Date().toISOString(),
       };
       const firestoreResult = await createUserInFirestore(userId, userData);
+      console.log("firestoreResult: ", firestoreResult);
       setLoading(false);
       if (firestoreResult.success) {
         router.push("/dashboard");
