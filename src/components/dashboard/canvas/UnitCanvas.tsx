@@ -5,16 +5,16 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { useGLTF } from "@react-three/drei";
 
-export type BHK = "1BHK" | "2BHK" | "3BHK" | "4BHK";
+export type BHK =  "2BHK" | "3BHK" ;
 
 type Props = { bhk?: BHK };
 
 function BHKModel({ bhk }: { bhk: BHK }) {
   const modelPath = {
-    "1BHK": "/models/1bhk.glb",
-    "2BHK": "/models/2bhk.glb",
-    "3BHK": "/models/3bhk.glb",
-    "4BHK": "/models/4bhk.glb",
+    // "1BHK": "/models/1bhk.glb",
+    "2BHK": "/models/2_BHK.glb",
+    "3BHK": "/models/3_BHK.glb",
+    // "4BHK": "/models/4bhk.glb",
   }[bhk];
 
   const { scene } = useGLTF(modelPath);
@@ -33,7 +33,7 @@ export default function UnitCanvas({ bhk }: Props) {
 
   return (
     <Canvas dpr={[1, 2]} className="rounded-md bg-[hsl(var(--card))]">
-      <PerspectiveCamera makeDefault position={[4, 3, 6]} fov={55} />
+      <PerspectiveCamera makeDefault position={[4, 3, 6]} fov={50} />
       <ambientLight intensity={0.7} />
       <directionalLight position={[8, 10, 6]} intensity={0.8} />
 
@@ -59,7 +59,7 @@ export default function UnitCanvas({ bhk }: Props) {
 }
 
 // Preload models for performance
-useGLTF.preload("/models/1bhk.glb");
+// useGLTF.preload("/models/1bhk.glb");
 useGLTF.preload("/models/2bhk.glb");
 useGLTF.preload("/models/3bhk.glb");
-useGLTF.preload("/models/4bhk.glb");
+// useGLTF.preload("/models/4bhk.glb");
