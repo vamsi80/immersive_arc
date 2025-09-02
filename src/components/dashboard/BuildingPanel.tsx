@@ -7,10 +7,15 @@ import BuildingCanvas, { BuildingMode } from "@/components/dashboard/canvas/Buil
 import UnitCanvas from "@/components/dashboard/canvas/UnitCanvas";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { Project, Block, Floor, Flat, BHK } from "@/types/types";
+import { Project, Block, Floor, Flat, BHK, FlatWithFloor } from "@/types/types";
 
-function getAllFlats(block: Block): Flat[] {
-  return Object.values(block.floors).flatMap(floor => Object.values(floor.flats));
+function getAllFlats(block: Block): FlatWithFloor[] {
+  return Object.values(block.floors).flatMap((floor) =>
+    Object.values(floor.flats).map((flat) => ({
+      ...flat,
+      floorId: floor.floorId, // ✅ include floorId
+    }))
+  );
 }
 
 type Props = {
@@ -21,6 +26,8 @@ type Props = {
   selectedFlat: Flat | null;
   setSelectedFlat: (u: Flat | null) => void;
   filterBhk: BHK | "All";
+  filteredFlats: FlatWithFloor[];
+  allFlats: FlatWithFloor[];
 };
 
 export default function BuildingPanel({
@@ -32,6 +39,11 @@ export default function BuildingPanel({
   filterBhk,
 }: Props) {
   const allFlats = getAllFlats(selectedBlock);
+
+  const filteredFlats = allFlats.filter((flat) => {
+    if (filterBhk === "All") return true;
+    return flat.bhk === filterBhk;
+  });
 
   const available = allFlats.filter((f) => f.status === "available").length;
   const sold = allFlats.filter((f) => f.status === "sold").length;
@@ -55,6 +67,8 @@ export default function BuildingPanel({
                 block={selectedBlock}
                 selectedFlat={selectedFlat}
                 filterBhk={filterBhk}
+                filteredFlats={filteredFlats}
+                allFlats={allFlats}
               />
               <div className="absolute top-3 left-3">
                 <div className="inline-flex items-center gap-2 rounded-full bg-secondary text-secondary-foreground px-3 py-1 text-xs shadow-subtle">

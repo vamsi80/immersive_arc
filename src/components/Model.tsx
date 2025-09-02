@@ -34,32 +34,35 @@ export const Model = forwardRef(({ url }: { url: string }, ref) => {
   useImperativeHandle(ref, () => ({
     highlightFlat: (flatId: string, color: string) => {
       scene.traverse((child: any) => {
-        if (child.isMesh && child.name === flatId) {
-          const mat = child.material as THREE.MeshStandardMaterial;
+        if (child.isMesh) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
 
-          gsap.to(mat.color, { ...new THREE.Color(color), duration: 1 });
-          gsap.to(mat.emissive, {
-            ...new THREE.Color(color),
-            duration: 3,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
+          materials.forEach((mat: THREE.MeshStandardMaterial) => {
+            if (mat.name === flatId) {
+              mat.color.set(color);
+              mat.emissive.set(color);
+              mat.emissiveIntensity = 1.5;
+            }
           });
-          mat.emissiveIntensity = 2;
         }
       });
     },
     resetHighlight: () => {
       scene.traverse((child: any) => {
-        if (child.isMesh && child.name.startsWith("flat_")) {
-          const mat = child.material as THREE.MeshStandardMaterial;
-          gsap.to(mat.color, { r: 0.15, g: 0.36, b: 0.62, duration: 0.8 }); // default blue-gray
-          mat.emissive.setRGB(0, 0, 0);
-          mat.emissiveIntensity = 0;
+        if (child.isMesh) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+
+          materials.forEach((mat: THREE.MeshStandardMaterial) => {
+            if (mat.name.startsWith("flat_")) {
+              // reset to neutral gray
+              mat.color.setRGB(0.8, 0.8, 0.8);
+              mat.emissive.setRGB(0, 0, 0);
+              mat.emissiveIntensity = 0;
+            }
+          });
         }
       });
     },
   }));
-
   return <primitive object={scene} dispose={null} />;
 });

@@ -69,7 +69,6 @@ export default function Filters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All</SelectItem>
-              <SelectItem value="1BHK">1BHK</SelectItem>
               <SelectItem value="2BHK">2BHK</SelectItem>
               <SelectItem value="2.5BHK">2.5BHK</SelectItem>
               <SelectItem value="3BHK">3BHK</SelectItem>

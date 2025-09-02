@@ -3,7 +3,7 @@ import React, { useEffect, useRef, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Environment, Html } from "@react-three/drei";
 import * as THREE from "three";
-import { Block, Flat, BHK } from "@/types/types";
+import { Block, Flat, BHK, FlatWithFloor } from "@/types/types";
 import { Model } from "@/components/Model";
 
 export type BuildingMode = "explore" | "inspect";
@@ -13,6 +13,8 @@ type Props = {
   block: Block;
   selectedFlat: Flat | null;
   filterBhk: BHK | "All";
+  filteredFlats: FlatWithFloor[];
+  allFlats: FlatWithFloor[];
 };
 
 function Loader() {
@@ -30,6 +32,8 @@ export default function BuildingCanvas({
   block,
   selectedFlat,
   filterBhk,
+  filteredFlats,
+  allFlats,
 }: Props) {
   const modelRef = useRef<any>(null);
   const isExplore = mode === "explore";
@@ -37,30 +41,33 @@ export default function BuildingCanvas({
   useEffect(() => {
     if (!modelRef.current) return;
 
+    // Step 1: reset all flats to neutral gray
     modelRef.current.resetHighlight();
 
-    // All flats
-    const allFlats = Object.values(block.floors).flatMap(f => Object.values(f.flats));
+    // Step 2: Decide which list to highlight
+    const flatsToHighlight =
+      filterBhk === "All" ? allFlats : filteredFlats;
 
-    allFlats.forEach((flat) => {
-      // Priority 1: Selected Flat
+      console.log("🎯 Highlighting these flats:", flatsToHighlight.map(f => f.flatId));
+
+    // Step 3: Highlight based on status + selection
+    flatsToHighlight.forEach((flat: FlatWithFloor) => {
+      // Selection always wins
       if (selectedFlat && flat.flatId === selectedFlat.flatId) {
         modelRef.current.highlightFlat(flat.flatId, "yellow");
         return;
       }
 
-      // Priority 2: Sold
+      // Status-based colors
       if (flat.status === "sold") {
         modelRef.current.highlightFlat(flat.flatId, "red");
-        return;
-      }
-
-      // Priority 3: Filter by BHK
-      if (filterBhk !== "All" && flat.bhk === filterBhk) {
-        modelRef.current.highlightFlat(flat.flatId, flat.bhk === "2BHK" ? "blue" : "green");
+      } else if (flat.status === "reserved") {
+        modelRef.current.highlightFlat(flat.flatId, "orange");
+      } else if (flat.status === "available") {
+        modelRef.current.highlightFlat(flat.flatId, "green");
       }
     });
-  }, [block, selectedFlat, filterBhk]);
+  }, [allFlats, filteredFlats, selectedFlat, filterBhk]);
 
   if (!block.modelPath) {
     return <div className="flex items-center justify-center h-full">No model available</div>;
