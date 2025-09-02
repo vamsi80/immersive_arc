@@ -16,16 +16,16 @@ import { useTheme } from "next-themes";
 type Props = {
     mode: BuildingMode;
     setMode: (mode: BuildingMode) => void;
-    societyName: string;
+    projectName: string;
     blockName: string;
 };
 
-export default function Topbar({ societyName, blockName }: Props) {
+export default function Topbar({ projectName, blockName }: Props) {
     const { theme, setTheme } = useTheme();
     return (
         <div className="h-14 border-b flex items-center justify-between px-4">
             <div className="flex items-center gap-3">
-                <div className="text-sm text-muted-foreground">Dashboard / {societyName}</div>
+                <div className="text-sm text-muted-foreground">Dashboard / {projectName}</div>
                 <div className="h-5 w-px bg-border" />
                 <div className="text-sm font-medium">{blockName}</div>
             </div>

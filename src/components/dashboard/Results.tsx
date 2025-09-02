@@ -3,29 +3,38 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Unit, Block, BHK } from "@/types/types";
+import { Block, Flat, BHK } from "@/types/types";
 import { BedDouble, Bath, Sun, UtensilsCrossed, Sofa, User } from "lucide-react";
 
+function getAllFlats(block: Block) {
+  return Object.values(block.floors).flatMap((floor) =>
+    Object.values(floor.flats).map((flat) => ({ ...flat, floorId: floor.floorId }))
+  );
+}
+
 type Props = {
-  filteredUnits: Unit[];
-  selectedUnit: Unit | null;
-  setSelectedUnit: (u: Unit) => void;
+  filteredFlats: Flat[];
+  selectedFlat: Flat | null;
+  setSelectedFlat: (u: Flat) => void;
   filterBhk: BHK | "All";
   selectedBlock: Block;
 };
+type FlatWithFloor = Flat & { floorId: string };
 
 export default function Results({
-  filteredUnits,
-  selectedUnit,
-  setSelectedUnit,
+  filteredFlats,
+  selectedFlat,
+  setSelectedFlat,
   filterBhk,
   selectedBlock,
 }: Props) {
+  const allFlats = getAllFlats(selectedBlock);
+
   return (
     <Card className="p-3 shadow-subtle overflow-y-auto">
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm text-muted-foreground">Results</div>
-        <div className="text-xs">{filteredUnits.length} units</div>
+        <div className="text-xs">{filteredFlats.length} flats</div>
       </div>
 
       {/* BHK summary features */}
@@ -35,10 +44,9 @@ export default function Results({
             <div className="text-sm font-medium">{filterBhk} Apartment</div>
             <div className="text-xs text-muted-foreground">
               Available{" "}
-              {selectedBlock.units.filter((u) => u.bhk === filterBhk && u.availability === "Available").length} •
-              Booked{" "}
-              {selectedBlock.units.filter((u) => u.bhk === filterBhk && u.availability === "Booked").length} • On Hold{" "}
-              {selectedBlock.units.filter((u) => u.bhk === filterBhk && u.availability === "On Hold").length}
+              {allFlats.filter((f) => f.bhk === filterBhk && f.status === "available").length} • Sold{" "}
+              {allFlats.filter((f) => f.bhk === filterBhk && f.status === "sold").length} • Reserved{" "}
+              {allFlats.filter((f) => f.bhk === filterBhk && f.status === "reserved").length}
             </div>
           </div>
 
@@ -59,35 +67,35 @@ export default function Results({
         </div>
       )}
 
-      {/* Units list */}
+      {/* Flats list */}
       <div className="grid grid-cols-3 gap-3 overflow-y-auto pr-1 flex-1 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-muted-foreground/40 scrollbar-track-transparent">
-        {filteredUnits.map((u) => (
+        {filteredFlats.map((f) => (
           <button
-            key={u.id}
-            onClick={() => setSelectedUnit(u)}
+            key={f.flatId}
+            onClick={() => setSelectedFlat(f)}
             className={cn(
               "rounded-md border h-20 p-2 text-left",
-              selectedUnit?.id === u.id && "border-primary bg-primary/5"
+              selectedFlat?.flatId === f.flatId && "border-primary bg-primary/5"
             )}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium">{u.unitNo}</span>
+              <span className="text-sm font-medium">{f.flatId}</span>
               <Badge variant="secondary" className="text-[10px]">
-                {u.bhk}
+                {f.bhk}
               </Badge>
             </div>
-            <div className="text-xs text-muted-foreground">Floor {u.floor}</div>
+            {/* <div className="text-xs text-muted-foreground">Floor {f.floorId.replace("floor_", "")}</div> */}
             <div
               className={cn(
                 "mt-1 text-[11px]",
-                u.availability === "Available"
+                f.status === "available"
                   ? "text-green-600"
-                  : u.availability === "Booked"
+                  : f.status === "sold"
                   ? "text-red-600"
                   : "text-amber-600"
               )}
             >
-              {u.availability}
+              {f.status}
             </div>
           </button>
         ))}
@@ -106,13 +114,13 @@ function getFeatures(bhk: BHK) {
       { icon: UtensilsCrossed, label: "Modular Kitchen", sub: "With utility niche" },
       { icon: Sofa, label: "Living & Dining", sub: "Combined space" },
     ];
-  if (bhk === "2BHK")
+  if (bhk === "2BHK" || bhk === "2.5BHK")
     return [
-      { icon: BedDouble, label: "2 Bedrooms", sub: "1 master + 1 bedroom" },
-      { icon: Bath, label: "2 Bathrooms", sub: "1 attached + 1 common" },
+      { icon: BedDouble, label: `${bhk === "2BHK" ? "2" : "2.5"} Bedrooms`, sub: "Spacious layout" },
+      { icon: Bath, label: "2 Bathrooms", sub: "Attached + common" },
       { icon: Sun, label: "1–2 Balconies", sub: "Airy & bright" },
       { icon: UtensilsCrossed, label: "Modular Kitchen", sub: "Utility attached" },
-      { icon: Sofa, label: "Living & Dining", sub: "Spacious layout" },
+      { icon: Sofa, label: "Living & Dining", sub: "Well designed space" },
     ];
   if (bhk === "3BHK")
     return [

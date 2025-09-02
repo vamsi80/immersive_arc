@@ -7,24 +7,36 @@ import BuildingCanvas, { BuildingMode } from "@/components/dashboard/canvas/Buil
 import UnitCanvas from "@/components/dashboard/canvas/UnitCanvas";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { Society, Block, Unit, BHK } from "@/types/types";
+import { Project, Block, Floor, Flat, BHK } from "@/types/types";
+
+function getAllFlats(block: Block): Flat[] {
+  return Object.values(block.floors).flatMap(floor => Object.values(floor.flats));
+}
 
 type Props = {
   mode: BuildingMode;
-  selectedSociety: Society;
+  selectedProject: Project;
   selectedBlock: Block;
-  selectedUnit: Unit | null;
-  setSelectedUnit: (u: Unit | null) => void;
+  selectedFloor: Floor | null;
+  selectedFlat: Flat | null;
+  setSelectedFlat: (u: Flat | null) => void;
   filterBhk: BHK | "All";
 };
 
 export default function BuildingPanel({
   mode,
-  selectedSociety,
+  selectedProject,
   selectedBlock,
-  selectedUnit,
+  selectedFloor,
+  selectedFlat,
   filterBhk,
 }: Props) {
+  const allFlats = getAllFlats(selectedBlock);
+
+  const available = allFlats.filter((f) => f.status === "available").length;
+  const sold = allFlats.filter((f) => f.status === "sold").length;
+  const reserved = allFlats.filter((f) => f.status === "reserved").length;
+
   return (
     <div className="grid grid-rows-[1fr_auto] gap-4 overflow-hidden">
       <Card className="p-0 shadow-elevated overflow-hidden">
@@ -51,12 +63,12 @@ export default function BuildingPanel({
           {/* Unit 3D */}
           <TabsContent value="unit" className="m-0 h-full p-2">
             <div className="h-full rounded-md bg-muted flex items-center justify-center">
-              {filterBhk === "All" && !selectedUnit ? (
+              {filterBhk === "All" && !selectedFlat ? (
                 <div className="text-sm text-muted-foreground">
                   Select the unit BHK
                 </div>
-              ) : selectedUnit ? (
-                <UnitCanvas bhk={selectedUnit.bhk} />
+              ) : selectedFlat ? (
+                <UnitCanvas bhk={selectedFlat.bhk as BHK} />
               ) : (
                 <div className="text-sm text-muted-foreground">
                   Select a unit ({filterBhk})
@@ -68,7 +80,7 @@ export default function BuildingPanel({
           {/* Floorplans */}
           <TabsContent value="plans" className="m-0 h-full p-2">
             <div className="h-full rounded-md bg-muted relative">
-              {selectedUnit ? (
+              {selectedFlat ? (
                 <div className="h-full flex items-center justify-center">
                   <Carousel className="w-[320px]" opts={{ loop: true }}>
                     <CarouselContent>
@@ -102,23 +114,17 @@ export default function BuildingPanel({
       <Card className="px-10 flex flex-row items-center justify-between shadow-subtle">
         <div className="space-y-1">
           <div className="text-sm text-muted-foreground">
-            {selectedSociety.name} • {selectedBlock.name}
+            {selectedProject.name} • {selectedBlock.name}
           </div>
           <div className="text-sm">
-            Floors: <span className="font-medium">{selectedBlock.floors}</span> •
-            Units: <span className="font-medium">{selectedBlock.units.length}</span>
+            Floors: <span className="font-medium">{Object.keys(selectedBlock.floors).length}</span> •
+            Units: <span className="font-medium">{allFlats.length}</span>
           </div>
         </div>
         <div className="flex gap-2">
-          <Badge variant="secondary">
-            Available {selectedBlock.units.filter((u) => u.availability === "Available").length}
-          </Badge>
-          <Badge variant="secondary">
-            Booked {selectedBlock.units.filter((u) => u.availability === "Booked").length}
-          </Badge>
-          <Badge variant="secondary">
-            On Hold {selectedBlock.units.filter((u) => u.availability === "On Hold").length}
-          </Badge>
+          <Badge variant="secondary">Available {available}</Badge>
+          <Badge variant="secondary">Sold {sold}</Badge>
+          <Badge variant="secondary">Reserved {reserved}</Badge>
         </div>
       </Card>
     </div>

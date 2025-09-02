@@ -19,25 +19,25 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Building2, Blocks } from "lucide-react";
-import { Society } from "@/types/types";
+import { Project, Block  } from "@/types/types";
 import Image from "next/image";
 
 type Props = {
-    societies: Society[];
-    selectedSocietyId: string;
-    onSelectSociety: (id: string) => void;
-    selectedBlockId: string;
-    onSelectBlock: (id: string) => void;
+  projects: Project[];
+  selectedProjectId: string;
+  onSelectProject: (id: string) => void;  // ✅ renamed
+  selectedBlockId: string;
+  onSelectBlock: (id: string) => void;
 };
 
 export default function SidebarNav({
-    societies,
-    selectedSocietyId,
-    onSelectSociety,
+    projects,
+    selectedProjectId,
+    onSelectProject,
     selectedBlockId,
     onSelectBlock,
 }: Props) {
-    const selectedSociety = societies.find((s) => s.id === selectedSocietyId)!;
+    const selectedProject = projects.find((p) => p.projectId === selectedProjectId)!;
 
     return (
         <Sidebar collapsible="none" className="border-r h-screen overflow-hidden">
@@ -57,33 +57,33 @@ export default function SidebarNav({
                     <SidebarGroupLabel>Societies</SidebarGroupLabel>
                     <div className="px-2">
                         <Select
-                            value={selectedSocietyId}
-                            onValueChange={(id) => onSelectSociety(id)}
+                            value={selectedProjectId}
+                            onValueChange={(id) => onSelectProject(id)}
                         >
                             <SelectTrigger className="w-full">
                                 <Building2 className="mr-0 h-4 w-4 opacity-70" />
                                 <SelectValue placeholder="Select Society" />
                             </SelectTrigger>
                             <SelectContent>
-                                {societies.map((s) => (
-                                    <SelectItem key={s.id} value={s.id}>
-                                        {s.name} ({s.blocks.length} Blocks)
+                                {projects.map((p:Project) => (
+                                    <SelectItem key={p.projectId} value={p.projectId}>
+                                        {p.name} ({Object.keys(p.blocks).length} Blocks)
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
                 </SidebarGroup>
-                <SidebarSeparator /> 
+                <SidebarSeparator />
                 {/* Blocks */}
                 <SidebarGroup>
                     <SidebarGroupLabel>Blocks</SidebarGroupLabel>
                     <SidebarMenu>
-                        {selectedSociety.blocks.map((b) => (
-                            <SidebarMenuItem key={b.id}>
+                        {Object.values(selectedProject.blocks).map((b: Block) => (
+                            <SidebarMenuItem  key={b.blockId}>
                                 <SidebarMenuButton
-                                    isActive={b.id === selectedBlockId}
-                                    onClick={() => onSelectBlock(b.id)}
+                                    isActive={b.blockId === selectedBlockId}
+                                    onClick={() => onSelectBlock(b.blockId)}
                                     className="overflow-hidden text-ellipsis whitespace-nowrap"
                                 >
                                     <span className="flex items-center gap-2 overflow-hidden">

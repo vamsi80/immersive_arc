@@ -82,26 +82,47 @@
 
 
 // app/dashboard/types.ts
-export type Availability = "Available" | "Booked" | "On Hold";
-export type BHK = "1BHK" | "2BHK" | "3BHK" | "4BHK";
+// app/dashboard/data/types.ts
 
-export type Unit = {
-  id: string;
-  unitNo: string;
+export type BHK = "1BHK" | "2BHK" | "2.5BHK" | "3BHK" | "4BHK";
+
+export type FlatStatus = "available" | "sold" | "reserved" | "on hold";
+
+export interface Flat {
+  flatId: string;
+  // floorId: string;
   bhk: BHK;
-  floor: number;
-  availability: Availability;
-};
+  superBuiltUpSqft: number;
+  carpetSqft: number;
+  facing: string;
+  view: string;
+  balconyCount: number;
+  bathCount: number;
+  parking: string;
+  priceBase: number;
+  priceBand: string;
+  status: FlatStatus;
+}
 
-export type Block = {
-  id: string;
-  name: string;
-  floors: number;
-  units: Unit[];
-};
+export interface Floor {
+  floorId: string;
+  flats: Record<string, Flat>;
+}
 
-export type Society = {
-  id: string;
+export interface Block {
+  blockId: string;
   name: string;
-  blocks: Block[];
-};
+  floors: Record<string, Floor>;
+}
+
+export interface Project {
+  projectId: string;
+  name: string;
+  location: string;
+  description: string;
+  blocks: Record<string, Block>;
+}
+
+export interface ProjectsRoot {
+  projects: Record<string, Project>;
+}

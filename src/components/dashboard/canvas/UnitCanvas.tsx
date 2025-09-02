@@ -2,35 +2,28 @@
 
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { useGLTF } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
+import { BHK } from "@/types/types";   // ✅ import shared BHK
 
-export type BHK =  "2BHK" | "3BHK" ;
-
-type Props = { bhk?: BHK };
+type Props = { bhk: BHK };
 
 function BHKModel({ bhk }: { bhk: BHK }) {
-  const modelPath = {
-    // "1BHK": "/models/1bhk.glb",
+  const modelPath: Record<BHK, string | undefined> = {
+    "1BHK": "/models/1_BHK.glb",
     "2BHK": "/models/2_BHK.glb",
+    "2.5BHK": "/models/2_5_BHK.glb",
     "3BHK": "/models/3_BHK.glb",
-    // "4BHK": "/models/4bhk.glb",
-  }[bhk];
+    "4BHK": "/models/4_BHK.glb",
+  };
 
-  const { scene } = useGLTF(modelPath);
+  const path = modelPath[bhk];
+  if (!path) return null;
 
+  const { scene } = useGLTF(path);
   return <primitive object={scene} scale={1.2} />;
 }
 
 export default function UnitCanvas({ bhk }: Props) {
-  if (!bhk) {
-    return (
-      <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-        Select a unit BHK
-      </div>
-    );
-  }
-
   return (
     <Canvas dpr={[1, 2]} className="rounded-md bg-[hsl(var(--card))]">
       <PerspectiveCamera makeDefault position={[4, 3, 6]} fov={50} />
@@ -58,8 +51,9 @@ export default function UnitCanvas({ bhk }: Props) {
   );
 }
 
-// Preload models for performance
-// useGLTF.preload("/models/1bhk.glb");
-useGLTF.preload("/models/2bhk.glb");
-useGLTF.preload("/models/3bhk.glb");
-// useGLTF.preload("/models/4bhk.glb");
+// ✅ preload using same shared paths
+useGLTF.preload("/models/1_BHK.glb");
+useGLTF.preload("/models/2_BHK.glb");
+useGLTF.preload("/models/2_5_BHK.glb");
+useGLTF.preload("/models/3_BHK.glb");
+useGLTF.preload("/models/4_BHK.glb");

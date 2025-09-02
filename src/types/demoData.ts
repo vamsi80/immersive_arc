@@ -1,36 +1,186 @@
 // app/dashboard/data/demoData.ts
-import { Society, Block, Unit, BHK, Availability } from "./types";
+import { ProjectsRoot } from "./types";
 
-function createBlock(label: string, floors: number): Block {
-  const units: Unit[] = [];
-  let uid = 0;
-  const bhkTypes: BHK[] = ["1BHK", "2BHK", "3BHK", "4BHK"];
-  for (let f = 1; f <= Math.min(floors, 10); f++) {
-    for (let u = 1; u <= 4; u++) {
-      const bhk = bhkTypes[(f + u) % 3];
-      const availability: Availability =
-        u % 4 === 0 ? "On Hold" : u % 3 === 0 ? "Booked" : "Available";
-      units.push({
-        id: `${label}-${uid++}`,
-        unitNo: `${f}0${u}`,
-        bhk,
-        floor: f,
-        availability,
-      });
-    }
-  }
-  return { id: `b-${label}`, name: `Block ${label}`, floors, units };
-}
-
-export const demoData: Society[] = [
-  {
-    id: "s1",
-    name: "Azure Heights",
-    blocks: [createBlock("A", 10), createBlock("B", 8), createBlock("C", 6)],
+export const demoData: ProjectsRoot = {
+  projects: {
+    project_001: {
+      projectId: "project_001",
+      name: "Skyline Residency",
+      location: "Hyderabad",
+      description: "Luxury apartments with modern amenities",
+      blocks: {
+        block_A: {
+          blockId: "block_A",
+          name: "Block A",
+          floors: {
+            floor_1: {
+              floorId: "floor_1",
+              flats: {
+                flat_101: {
+                  flatId: "flat_101",
+                  bhk: "1BHK",
+                  superBuiltUpSqft: 700,
+                  carpetSqft: 490,
+                  facing: "East",
+                  view: "Garden",
+                  balconyCount: 1,
+                  bathCount: 1,
+                  parking: "Open",
+                  priceBase: 3500000,
+                  priceBand: "30–40L",
+                  status: "available",
+                },
+                flat_102: {
+                  flatId: "flat_102",
+                  bhk: "2BHK",
+                  superBuiltUpSqft: 1100,
+                  carpetSqft: 770,
+                  facing: "West",
+                  view: "City",
+                  balconyCount: 2,
+                  bathCount: 2,
+                  parking: "Covered",
+                  priceBase: 5500000,
+                  priceBand: "50–60L",
+                  status: "sold",
+                },
+              },
+            },
+            floor_2: {
+              floorId: "floor_2",
+              flats: {
+                flat_201: {
+                  flatId: "flat_201",
+                  bhk: "1BHK",
+                  superBuiltUpSqft: 720,
+                  carpetSqft: 500,
+                  facing: "West",
+                  view: "Road",
+                  balconyCount: 1,
+                  bathCount: 1,
+                  parking: "None",
+                  priceBase: 3600000,
+                  priceBand: "30–40L",
+                  status: "available",
+                },
+                flat_202: {
+                  flatId: "flat_202",
+                  bhk: "2.5BHK",
+                  superBuiltUpSqft: 1250,
+                  carpetSqft: 880,
+                  facing: "East",
+                  view: "City",
+                  balconyCount: 2,
+                  bathCount: 2,
+                  parking: "Covered",
+                  priceBase: 6200000,
+                  priceBand: "60–70L",
+                  status: "reserved",
+                },
+              },
+            },
+            floor_3: {
+              floorId: "floor_3",
+              flats: {
+                flat_301: {
+                  flatId: "flat_301",
+                  bhk: "2BHK",
+                  superBuiltUpSqft: 1180,
+                  carpetSqft: 820,
+                  facing: "South",
+                  view: "Pool",
+                  balconyCount: 2,
+                  bathCount: 2,
+                  parking: "Covered",
+                  priceBase: 5900000,
+                  priceBand: "50–60L",
+                  status: "available",
+                },
+                flat_302: {
+                  flatId: "flat_302",
+                  bhk: "3BHK",
+                  superBuiltUpSqft: 1500,
+                  carpetSqft: 1050,
+                  facing: "North",
+                  view: "Garden",
+                  balconyCount: 2,
+                  bathCount: 3,
+                  parking: "Covered",
+                  priceBase: 7500000,
+                  priceBand: "70–80L",
+                  status: "sold",
+                },
+              },
+            },
+            floor_4: {
+              floorId: "floor_4",
+              flats: {
+                flat_401: {
+                  flatId: "flat_401",
+                  bhk: "3BHK",
+                  superBuiltUpSqft: 1520,
+                  carpetSqft: 1060,
+                  facing: "North",
+                  view: "Park",
+                  balconyCount: 2,
+                  bathCount: 3,
+                  parking: "Covered",
+                  priceBase: 7600000,
+                  priceBand: "70–80L",
+                  status: "reserved",
+                },
+                flat_402: {
+                  flatId: "flat_402",
+                  bhk: "4BHK",
+                  superBuiltUpSqft: 2000,
+                  carpetSqft: 1400,
+                  facing: "East",
+                  view: "City",
+                  balconyCount: 3,
+                  bathCount: 4,
+                  parking: "Covered",
+                  priceBase: 10000000,
+                  priceBand: "1Cr+",
+                  status: "available",
+                },
+              },
+            },
+            floor_5: {
+              floorId: "floor_5",
+              flats: {
+                flat_501: {
+                  flatId: "flat_501",
+                  bhk: "1BHK",
+                  superBuiltUpSqft: 730,
+                  carpetSqft: 510,
+                  facing: "East",
+                  view: "Garden",
+                  balconyCount: 1,
+                  bathCount: 1,
+                  parking: "Open",
+                  priceBase: 3650000,
+                  priceBand: "30–40L",
+                  status: "sold",
+                },
+                flat_502: {
+                  flatId: "flat_502",
+                  bhk: "2.5BHK",
+                  superBuiltUpSqft: 1260,
+                  carpetSqft: 890,
+                  facing: "West",
+                  view: "Pool",
+                  balconyCount: 2,
+                  bathCount: 2,
+                  parking: "Covered",
+                  priceBase: 6400000,
+                  priceBand: "60–70L",
+                  status: "available",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
-  {
-    id: "s2",
-    name: "Emerald Residences",
-    blocks: [createBlock("East", 9), createBlock("West", 9)],
-  },
-];
+};

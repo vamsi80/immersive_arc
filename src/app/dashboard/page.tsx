@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { demoData } from "@/types/demoData";
-import { Society, Block, Unit, BHK, Availability } from "@/types/types";
+import { demoData } from "@/types/demoData"
+import { Project, Flat, BHK } from "@/types/types";
 import SidebarNav from "@/components/SidebarNav";
 import Topbar from "@/components/Topbar";
 import BuildingPanel from "@/components/dashboard/BuildingPanel";
@@ -11,61 +11,67 @@ import RightPanel from "@/components/dashboard/RightPanel";
 import { BuildingMode } from "@/components/dashboard/canvas/BuildingCanvas";
 
 export default function DashboardPage() {
-  const [societies] = useState<Society[]>(demoData);
-  const [selectedSocietyId, setSelectedSocietyId] = useState(societies[0].id);
+  // Load projects
+  const [projects] = useState<Project[]>(Object.values(demoData.projects));
+  const [selectedProjectId, setSelectedProjectId] = useState(projects[0].projectId);
   const [selectedBlockId, setSelectedBlockId] = useState(
-    societies[0].blocks[0].id,
+    Object.values(projects[0].blocks)[0].blockId
   );
 
-  const selectedSociety = societies.find((s) => s.id === selectedSocietyId)!;
-  const selectedBlock = selectedSociety.blocks.find(
-    (b) => b.id === selectedBlockId,
-  )!;
+  const selectedProject = projects.find((p) => p.projectId === selectedProjectId)!;
+  const selectedBlock = selectedProject.blocks[selectedBlockId];
+
+  // Selections
+  const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
+  const [selectedFlat, setSelectedFlat] = useState<Flat | null>(null);
+
+  // Filters & Mode
   const [filterBhk, setFilterBhk] = useState<BHK | "All">("All");
-
   const [mode, setMode] = useState<BuildingMode>("explore");
-  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
 
-  // ensure reset on society change
-  const onSelectSociety = (id: string) => {
-    setSelectedSocietyId(id);
-    const s = societies.find((x) => x.id === id)!;
-    setSelectedBlockId(s.blocks[0].id);
-    setSelectedUnit(null);
+  // Reset on project change
+  const onSelectProject = (id: string) => {
+    setSelectedProjectId(id);
+    const proj = projects.find((x) => x.projectId === id)!;
+    setSelectedBlockId(Object.values(proj.blocks)[0].blockId);
+    setSelectedFlat(null);
+    setSelectedFloorId(null);
   };
 
   return (
     <SidebarProvider>
       <SidebarNav
-        societies={societies}
-        selectedSocietyId={selectedSocietyId}
-        onSelectSociety={onSelectSociety}
+        projects={projects} // ✅ SidebarNav must support this prop
+        selectedProjectId={selectedProjectId}
+        onSelectProject={onSelectProject}
         selectedBlockId={selectedBlockId}
         onSelectBlock={(id) => {
           setSelectedBlockId(id);
-          setSelectedUnit(null);
+          setSelectedFlat(null);
+          setSelectedFloorId(null);
         }}
       />
       <SidebarInset>
         <Topbar
           mode={mode}
           setMode={setMode}
-          societyName={selectedSociety.name}
+          projectName={selectedProject.name} // ✅ Topbar must accept projectName now
           blockName={selectedBlock.name}
         />
         <div className="grid grid-cols-[1fr_620px] gap-4 p-4 h-[calc(100svh-56px)] overflow-hidden">
           <BuildingPanel
             mode={mode}
+            selectedProject={selectedProject}
             selectedBlock={selectedBlock}
-            selectedSociety={selectedSociety}
-            selectedUnit={selectedUnit}
-            setSelectedUnit={setSelectedUnit}
+            selectedFloor={selectedFloorId ? selectedBlock.floors[selectedFloorId] : null}
+            selectedFlat={selectedFlat}
+            setSelectedFlat={setSelectedFlat}
             filterBhk={filterBhk}
           />
           <RightPanel
             selectedBlock={selectedBlock}
-            selectedUnit={selectedUnit}
-            setSelectedUnit={setSelectedUnit}
+            selectedFlat={selectedFlat} // ✅ RightPanel must accept selectedFlat
+            setSelectedFlat={setSelectedFlat}
           />
         </div>
       </SidebarInset>
