@@ -84,7 +84,7 @@
 // app/dashboard/types.ts
 // app/dashboard/data/types.ts
 
-export type BHK = "1BHK" | "2BHK" | "2.5BHK" | "3BHK" | "4BHK";
+export type BHK = "2BHK" | "2.5BHK" | "3BHK" | "4BHK";
 
 export type FlatStatus = "available" | "sold" | "reserved" | "on hold";
 
@@ -109,10 +109,13 @@ export interface Floor {
   flats: Record<string, Flat>;
 }
 
+export type FlatWithFloor = Flat & { floorId: string };
+
 export interface Block {
   blockId: string;
   name: string;
   floors: Record<string, Floor>;
+  modelPath: string;
 }
 
 export interface Project {

@@ -50,7 +50,12 @@ export default function BuildingPanel({
           {/* Block 3D */}
           <TabsContent value="block" className="m-0 h-full p-2">
             <div className="h-full w-full relative">
-              <BuildingCanvas mode={mode} />
+              <BuildingCanvas
+                mode={mode}
+                block={selectedBlock}
+                selectedFlat={selectedFlat}
+                filterBhk={filterBhk}
+              />
               <div className="absolute top-3 left-3">
                 <div className="inline-flex items-center gap-2 rounded-full bg-secondary text-secondary-foreground px-3 py-1 text-xs shadow-subtle">
                   <Blocks className="h-4 w-4 opacity-70" />

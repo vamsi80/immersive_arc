@@ -2,25 +2,38 @@
 
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
-import { BHK } from "@/types/types";   // ✅ import shared BHK
+import { OrbitControls, PerspectiveCamera, Html, useGLTF } from "@react-three/drei";
+import { BHK } from "@/types/types";
+import { bhkModels } from "@/types/bhkModels";
 
 type Props = { bhk: BHK };
 
-function BHKModel({ bhk }: { bhk: BHK }) {
-  const modelPath: Record<BHK, string | undefined> = {
-    "1BHK": "/models/1_BHK.glb",
-    "2BHK": "/models/2_BHK.glb",
-    "2.5BHK": "/models/2_5_BHK.glb",
-    "3BHK": "/models/3_BHK.glb",
-    "4BHK": "/models/4_BHK.glb",
-  };
+// ✅ Safe wrapper for GLTF loading
+function SafeBHKModel({ bhk }: { bhk: BHK }) {
+  const path = bhkModels[bhk];
 
-  const path = modelPath[bhk];
-  if (!path) return null;
+  if (!path) {
+    return (
+      <Html center>
+        <div className="text-xs text-red-500 bg-white/90 px-3 py-2 rounded-md shadow">
+          Model not available for {bhk}
+        </div>
+      </Html>
+    );
+  }
 
-  const { scene } = useGLTF(path);
-  return <primitive object={scene} scale={1.2} />;
+  try {
+    const { scene } = useGLTF(path);
+    return <primitive object={scene} scale={1.2} />;
+  } catch (e) {
+    return (
+      <Html center>
+        <div className="text-xs text-red-500 bg-white/90 px-3 py-2 rounded-md shadow">
+          Failed to load {bhk} model
+        </div>
+      </Html>
+    );
+  }
 }
 
 export default function UnitCanvas({ bhk }: Props) {
@@ -36,8 +49,17 @@ export default function UnitCanvas({ bhk }: Props) {
         <meshStandardMaterial color="#f3f4f6" />
       </mesh>
 
-      <Suspense fallback={null}>
-        <BHKModel bhk={bhk} />
+      {/* Model or loader */}
+      <Suspense
+        fallback={
+          <Html center>
+            <div className="text-xs text-muted-foreground bg-white/90 px-3 py-2 rounded-md shadow">
+              Loading {bhk}...
+            </div>
+          </Html>
+        }
+      >
+        <SafeBHKModel bhk={bhk} />
       </Suspense>
 
       <OrbitControls
@@ -50,10 +72,3 @@ export default function UnitCanvas({ bhk }: Props) {
     </Canvas>
   );
 }
-
-// ✅ preload using same shared paths
-useGLTF.preload("/models/1_BHK.glb");
-useGLTF.preload("/models/2_BHK.glb");
-useGLTF.preload("/models/2_5_BHK.glb");
-useGLTF.preload("/models/3_BHK.glb");
-useGLTF.preload("/models/4_BHK.glb");

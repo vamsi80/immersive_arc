@@ -1,106 +1,86 @@
 "use client";
-
-import React from "react";
+import React, { useEffect, useRef, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Environment, Html } from "@react-three/drei";
 import * as THREE from "three";
+import { Block, Flat, BHK } from "@/types/types";
+import { Model } from "@/components/Model";
 
 export type BuildingMode = "explore" | "inspect";
 
-function BuildingModel() {
-  const group = React.useRef<THREE.Group>(null!);
+type Props = {
+  mode?: BuildingMode;
+  block: Block;
+  selectedFlat: Flat | null;
+  filterBhk: BHK | "All";
+};
 
-  // Simple procedural building: podium + tower with window insets
-  const floors = 10;
-  const unitsPerSide = 4;
-  const floorHeight = 0.6;
-  const towerWidth = 4;
-  const towerDepth = 2.5;
-
+function Loader() {
   return (
-    <group ref={group} position={[0, floors * floorHeight * 0.5, 0]}>
-      {/* Podium */}
-      <mesh castShadow receiveShadow position={[0, -floorHeight * 1.5, 0]}>
-        <boxGeometry args={[towerWidth + 0.8, floorHeight * 2, towerDepth + 0.8]} />
-        <meshStandardMaterial color="#e5e7eb" metalness={0.1} roughness={0.8} />
-      </mesh>
-      {/* Tower */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[towerWidth, floors * floorHeight, towerDepth]} />
-        <meshStandardMaterial color="#cbd5e1" metalness={0.2} roughness={0.8} />
-      </mesh>
-      {/* Window grid as small insets */}
-      {Array.from({ length: floors }).map((_, fi) =>
-        Array.from({ length: unitsPerSide }).map((_, ui) => (
-          <mesh
-            key={`w-${fi}-${ui}`}
-            position={[
-              -towerWidth / 2 + 0.5 + (ui * (towerWidth - 1)) / (unitsPerSide - 1),
-              -floors * floorHeight * 0.5 + floorHeight * (fi + 0.5),
-              towerDepth / 2 + 0.01,
-            ]}
-          >
-            <boxGeometry args={[0.25, 0.25, 0.02]} />
-            <meshStandardMaterial color="#94a3b8" metalness={0.6} roughness={0.2} />
-          </mesh>
-        )),
-      )}
-      {/* Back windows */}
-      {Array.from({ length: floors }).map((_, fi) =>
-        Array.from({ length: unitsPerSide }).map((_, ui) => (
-          <mesh
-            key={`wb-${fi}-${ui}`}
-            position={[
-              -towerWidth / 2 + 0.5 + (ui * (towerWidth - 1)) / (unitsPerSide - 1),
-              -floors * floorHeight * 0.5 + floorHeight * (fi + 0.5),
-              -towerDepth / 2 - 0.01,
-            ]}
-          >
-            <boxGeometry args={[0.25, 0.25, 0.02]} />
-            <meshStandardMaterial color="#94a3b8" metalness={0.6} roughness={0.2} />
-          </mesh>
-        )),
-      )}
-      {/* Simple logo spire */}
-      <mesh castShadow receiveShadow position={[towerWidth / 3, floors * floorHeight * 0.55, 0]}>
-        <cylinderGeometry args={[0.05, 0.05, 1.2, 12]} />
-        <meshStandardMaterial color="#3b82f6" />
-      </mesh>
-    </group>
+    <Html center>
+      <div className="text-xs bg-background/80 px-3 py-2 rounded">
+        Loading model…
+      </div>
+    </Html>
   );
 }
 
-export default function BuildingCanvas({ mode = "explore" as BuildingMode }) {
+export default function BuildingCanvas({
+  mode = "explore",
+  block,
+  selectedFlat,
+  filterBhk,
+}: Props) {
+  const modelRef = useRef<any>(null);
   const isExplore = mode === "explore";
+
+  useEffect(() => {
+    if (!modelRef.current) return;
+
+    modelRef.current.resetHighlight();
+
+    // All flats
+    const allFlats = Object.values(block.floors).flatMap(f => Object.values(f.flats));
+
+    allFlats.forEach((flat) => {
+      // Priority 1: Selected Flat
+      if (selectedFlat && flat.flatId === selectedFlat.flatId) {
+        modelRef.current.highlightFlat(flat.flatId, "yellow");
+        return;
+      }
+
+      // Priority 2: Sold
+      if (flat.status === "sold") {
+        modelRef.current.highlightFlat(flat.flatId, "red");
+        return;
+      }
+
+      // Priority 3: Filter by BHK
+      if (filterBhk !== "All" && flat.bhk === filterBhk) {
+        modelRef.current.highlightFlat(flat.flatId, flat.bhk === "2BHK" ? "blue" : "green");
+      }
+    });
+  }, [block, selectedFlat, filterBhk]);
+
+  if (!block.modelPath) {
+    return <div className="flex items-center justify-center h-full">No model available</div>;
+  }
+
   return (
-    <Canvas shadows dpr={[1, 2]} className="rounded-lg bg-[hsl(var(--card))]">
-      {/* Camera */}
-      <PerspectiveCamera makeDefault position={[6, 5, 7]} fov={isExplore ? 45 : 60} />
-
-      {/* Lights */}
+    <Canvas dpr={[1, 2]} className="rounded-lg bg-[hsl(var(--card))]">
+      <PerspectiveCamera makeDefault position={[6, 5, 7]} fov={60} />
       <ambientLight intensity={0.6} />
-      <directionalLight
-        castShadow
-        position={[10, 10, 5]}
-        intensity={0.8}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
+      <directionalLight position={[10, 10, 5]} intensity={0.8} castShadow />
 
-      {/* Ground */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <planeGeometry args={[50, 50]} />
-        <shadowMaterial opacity={0.15} />
-      </mesh>
-
-      <BuildingModel />
+      <Suspense fallback={<Loader />}>
+        <Model ref={modelRef} url={block.modelPath} />
+        <Environment preset="city" intensity={0.1} />
+      </Suspense>
 
       <OrbitControls
         enablePan={!isExplore}
         enableZoom
-        autoRotate={isExplore}
-        autoRotateSpeed={0.5}
-        maxPolarAngle={isExplore ? Math.PI / 2.2 : Math.PI / 2}
+        maxPolarAngle={Math.PI / 2.2}
         minDistance={3}
         maxDistance={18}
       />

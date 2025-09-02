@@ -24,46 +24,32 @@ const ModelViewer = () => {
     { flatId: "flat_502", material: "flat_502", bhk: "2BHK", sqft: 950, sold: false, floor: 5, block: "A" },
     { flatId: "flat_601", material: "flat_601", bhk: "1BHK", sqft: 650, sold: false, floor: 6, block: "A" },
     { flatId: "flat_602", material: "flat_602", bhk: "2BHK", sqft: 960, sold: false, floor: 6, block: "A" },
-
     { flatId: "flat_701", material: "flat_701", bhk: "1BHK", sqft: 660, sold: false, floor: 7, block: "A" },
     { flatId: "flat_702", material: "flat_702", bhk: "2BHK", sqft: 970, sold: false, floor: 7, block: "A" },
-
     { flatId: "flat_801", material: "flat_801", bhk: "1BHK", sqft: 670, sold: false, floor: 8, block: "A" },
     { flatId: "flat_802", material: "flat_802", bhk: "2BHK", sqft: 980, sold: false, floor: 8, block: "A" },
-
     { flatId: "flat_901", material: "flat_901", bhk: "1BHK", sqft: 680, sold: false, floor: 9, block: "A" },
     { flatId: "flat_902", material: "flat_902", bhk: "2BHK", sqft: 990, sold: false, floor: 9, block: "A" },
-
     { flatId: "flat_1001", material: "flat_1001", bhk: "1BHK", sqft: 690, sold: false, floor: 10, block: "A" },
     { flatId: "flat_1002", material: "flat_1002", bhk: "2BHK", sqft: 1000, sold: false, floor: 10, block: "A" },
-
     { flatId: "flat_1101", material: "flat_1101", bhk: "1BHK", sqft: 700, sold: false, floor: 11, block: "A" },
     { flatId: "flat_1102", material: "flat_1102", bhk: "2BHK", sqft: 1010, sold: false, floor: 11, block: "A" },
-
     { flatId: "flat_1201", material: "flat_1201", bhk: "1BHK", sqft: 710, sold: false, floor: 12, block: "A" },
     { flatId: "flat_1202", material: "flat_1202", bhk: "2BHK", sqft: 1020, sold: false, floor: 12, block: "A" },
-
     { flatId: "flat_1301", material: "flat_1301", bhk: "1BHK", sqft: 720, sold: false, floor: 13, block: "A" },
     { flatId: "flat_1302", material: "flat_1302", bhk: "2BHK", sqft: 1030, sold: false, floor: 13, block: "A" },
-
     { flatId: "flat_1401", material: "flat_1401", bhk: "1BHK", sqft: 730, sold: false, floor: 14, block: "A" },
     { flatId: "flat_1402", material: "flat_1402", bhk: "2BHK", sqft: 1040, sold: false, floor: 14, block: "A" },
-
     { flatId: "flat_1501", material: "flat_1501", bhk: "1BHK", sqft: 740, sold: false, floor: 15, block: "A" },
     { flatId: "flat_1502", material: "flat_1502", bhk: "2BHK", sqft: 1050, sold: false, floor: 15, block: "A" },
-
     { flatId: "flat_1601", material: "flat_1601", bhk: "1BHK", sqft: 750, sold: false, floor: 16, block: "A" },
     { flatId: "flat_1602", material: "flat_1602", bhk: "2BHK", sqft: 1060, sold: false, floor: 16, block: "A" },
-
     { flatId: "flat_1701", material: "flat_1701", bhk: "1BHK", sqft: 760, sold: false, floor: 17, block: "A" },
     { flatId: "flat_1702", material: "flat_1702", bhk: "2BHK", sqft: 1070, sold: false, floor: 17, block: "A" },
-
     { flatId: "flat_1801", material: "flat_1801", bhk: "1BHK", sqft: 770, sold: false, floor: 18, block: "A" },
     { flatId: "flat_1802", material: "flat_1802", bhk: "2BHK", sqft: 1080, sold: false, floor: 18, block: "A" },
-
     { flatId: "flat_1901", material: "flat_1901", bhk: "1BHK", sqft: 780, sold: false, floor: 19, block: "A" },
     { flatId: "flat_1902", material: "flat_1902", bhk: "2BHK", sqft: 1090, sold: false, floor: 19, block: "A" },
-
     { flatId: "flat_2001", material: "flat_2001", bhk: "1BHK", sqft: 790, sold: false, floor: 20, block: "A" },
     { flatId: "flat_2002", material: "flat_2002", bhk: "2BHK", sqft: 1100, sold: false, floor: 20, block: "A" }
   ];

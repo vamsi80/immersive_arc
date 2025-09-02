@@ -3,23 +3,25 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Block, Flat, BHK } from "@/types/types";
+import { Block, Flat, BHK, FlatWithFloor } from "@/types/types";
 import { BedDouble, Bath, Sun, UtensilsCrossed, Sofa, User } from "lucide-react";
 
-function getAllFlats(block: Block) {
+function getAllFlats(block: Block): FlatWithFloor[] {
   return Object.values(block.floors).flatMap((floor) =>
-    Object.values(floor.flats).map((flat) => ({ ...flat, floorId: floor.floorId }))
+    Object.values(floor.flats).map((flat) => ({
+      ...flat,
+      floorId: floor.floorId, // ✅ take from floor, not from Flat
+    }))
   );
 }
 
 type Props = {
-  filteredFlats: Flat[];
+  filteredFlats: FlatWithFloor[];
   selectedFlat: Flat | null;
   setSelectedFlat: (u: Flat) => void;
   filterBhk: BHK | "All";
   selectedBlock: Block;
 };
-type FlatWithFloor = Flat & { floorId: string };
 
 export default function Results({
   filteredFlats,
@@ -68,7 +70,7 @@ export default function Results({
       )}
 
       {/* Flats list */}
-      <div className="grid grid-cols-3 gap-3 overflow-y-auto pr-1 flex-1 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-muted-foreground/40 scrollbar-track-transparent">
+      <div className="grid grid-cols-3 gap-2 overflow-y-auto pr-1 flex-1 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-muted-foreground/40 scrollbar-track-transparent">
         {filteredFlats.map((f) => (
           <button
             key={f.flatId}
@@ -84,7 +86,7 @@ export default function Results({
                 {f.bhk}
               </Badge>
             </div>
-            {/* <div className="text-xs text-muted-foreground">Floor {f.floorId.replace("floor_", "")}</div> */}
+            <div className="text-xs text-muted-foreground">Floor {f.floorId.replace("floor_", "")}</div>
             <div
               className={cn(
                 "mt-1 text-[11px]",
@@ -106,14 +108,14 @@ export default function Results({
 
 // Utility: BHK features
 function getFeatures(bhk: BHK) {
-  if (bhk === "1BHK")
-    return [
-      { icon: BedDouble, label: "1 Bedroom", sub: "Cozy master bedroom" },
-      { icon: Bath, label: "1 Bathroom", sub: "Common bath" },
-      { icon: Sun, label: "Balcony", sub: "Ventilated view" },
-      { icon: UtensilsCrossed, label: "Modular Kitchen", sub: "With utility niche" },
-      { icon: Sofa, label: "Living & Dining", sub: "Combined space" },
-    ];
+  // if (bhk === "1BHK")
+  //   return [
+  //     { icon: BedDouble, label: "1 Bedroom", sub: "Cozy master bedroom" },
+  //     { icon: Bath, label: "1 Bathroom", sub: "Common bath" },
+  //     { icon: Sun, label: "Balcony", sub: "Ventilated view" },
+  //     { icon: UtensilsCrossed, label: "Modular Kitchen", sub: "With utility niche" },
+  //     { icon: Sofa, label: "Living & Dining", sub: "Combined space" },
+  //   ];
   if (bhk === "2BHK" || bhk === "2.5BHK")
     return [
       { icon: BedDouble, label: `${bhk === "2BHK" ? "2" : "2.5"} Bedrooms`, sub: "Spacious layout" },

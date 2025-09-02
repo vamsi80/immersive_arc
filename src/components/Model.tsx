@@ -4,11 +4,11 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
 
-export const Model = forwardRef((props: { url: string }, ref) => {
-  const { scene } = useGLTF(props.url) as any;
+export const Model = forwardRef(({ url }: { url: string }, ref) => {
+  const { scene } = useGLTF(url) as any;
 
   useLayoutEffect(() => {
-    // === Center and scale model ===
+    // === Center & scale ===
     const box = new THREE.Box3().setFromObject(scene);
     const size = box.getSize(new THREE.Vector3()).length();
     const center = box.getCenter(new THREE.Vector3());
@@ -21,68 +21,41 @@ export const Model = forwardRef((props: { url: string }, ref) => {
       scene.scale.setScalar(scaleFactor);
     }
 
-    // === Log all meshes & materials ===
-    console.log("🔎 Listing all meshes and materials from model:", props.url);
+    // Debug log
+    console.log("Loaded model:", url);
     scene.traverse((child: any) => {
       if (child.isMesh) {
-        console.log("📌 Mesh:", child.name);
-
-        if (Array.isArray(child.material)) {
-          child.material.forEach((mat: THREE.Material, idx: number) => {
-            console.log(
-              `   🎨 Material[${idx}] → Name: "${mat.name}" | Object:`,
-              mat
-            );
-          });
-        } else if (child.material) {
-          console.log(
-            `   🎨 Material → Name: "${child.material.name}" | Object:`,
-            child.material
-          );
-        }
+        child.material.side = THREE.DoubleSide; // fix backface issue
       }
     });
-  }, [scene, props.url]);
+  }, [scene, url]);
 
-  // === Expose functions to parent ===
+  // === Expose API ===
   useImperativeHandle(ref, () => ({
-    highlightMaterial: (materialName: string, color: string) => {
+    highlightFlat: (flatId: string, color: string) => {
       scene.traverse((child: any) => {
-        if (child.isMesh && child.material?.name === materialName) {
+        if (child.isMesh && child.name === flatId) {
           const mat = child.material as THREE.MeshStandardMaterial;
-          
-          console.log(`✨ Highlighting material: "${materialName}" → ${color}`);
 
-          // Animate base color
-          gsap.to(mat.color, {
-            ...new THREE.Color(color),
-            duration: 1,
-          });
-
-          // 🔥 Slow glowing effect with emissive
+          gsap.to(mat.color, { ...new THREE.Color(color), duration: 1 });
           gsap.to(mat.emissive, {
             ...new THREE.Color(color),
-            duration: 4,    // slower cycle (increase for slower)
-            repeat: -1,     // infinite loop
-            yoyo: true,     // fade in/out
-            ease: "sine.inOut", // smooth breathing
+            duration: 3,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
           });
-
-          mat.emissiveIntensity = 100; // reasonable glow strength
+          mat.emissiveIntensity = 2;
         }
       });
     },
     resetHighlight: () => {
-      console.log("🔄 Resetting only flats (not glass/walls)");
       scene.traverse((child: any) => {
-        if (child.isMesh && child.material?.name?.startsWith("flat_")) {
+        if (child.isMesh && child.name.startsWith("flat_")) {
           const mat = child.material as THREE.MeshStandardMaterial;
-          mat.envMapIntensity = 0.2;
-          if (mat.name.includes("glass")) {
-            mat.roughness = 1;  // higher = less sharp reflections
-            mat.metalness = 1;  // avoid mirror-like look
-          }
-          gsap.to(mat.color, { r: 1, g: 1, b: 1, duration: 1 }); // reset to white
+          gsap.to(mat.color, { r: 0.15, g: 0.36, b: 0.62, duration: 0.8 }); // default blue-gray
+          mat.emissive.setRGB(0, 0, 0);
+          mat.emissiveIntensity = 0;
         }
       });
     },
