@@ -12,6 +12,9 @@ type Props = { bhk: BHK };
 function SafeBHKModel({ bhk }: { bhk: BHK }) {
   const path = bhkModels[bhk];
 
+  // Always call hook (safe: path can be string | undefined)
+  const gltf = path ? useGLTF(path) : null;
+
   if (!path) {
     return (
       <Html center>
@@ -22,18 +25,11 @@ function SafeBHKModel({ bhk }: { bhk: BHK }) {
     );
   }
 
-  try {
-    const { scene } = useGLTF(path);
-    return <primitive object={scene} scale={1.2} />;
-  } catch (e) {
-    return (
-      <Html center>
-        <div className="text-xs text-red-500 bg-white/90 px-3 py-2 rounded-md shadow">
-          Failed to load {bhk} model
-        </div>
-      </Html>
-    );
+  if (!gltf) {
+    return null; // Suspense will handle loading fallback
   }
+
+  return <primitive object={gltf.scene} scale={1.2} />;
 }
 
 export default function UnitCanvas({ bhk }: Props) {
@@ -57,11 +53,7 @@ export default function UnitCanvas({ bhk }: Props) {
       />
 
       {/* Fill light from opposite side */}
-      <directionalLight
-        position={[-6, 6, -4]}
-        intensity={0.5}
-        color={"#ffeedd"}
-      />
+      <directionalLight position={[-6, 6, -4]} intensity={0.5} color={"#ffeedd"} />
 
       {/* Rim light behind model for highlights */}
       <pointLight position={[0, 5, -5]} intensity={0.6} color={"#88ccff"} />
@@ -87,6 +79,5 @@ export default function UnitCanvas({ bhk }: Props) {
         maxDistance={10}
       />
     </Canvas>
-
   );
 }

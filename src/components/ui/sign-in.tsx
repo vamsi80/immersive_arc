@@ -30,7 +30,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   title = <span className="font-light text-foreground tracking-tighter">Welcome</span>,
   description = "Access your account and continue your journey with us",
   heroImageSrc,
-  onSignIn,
+  // onSignIn,
   onResetPassword,
   onCreateAccount,
 }) => {

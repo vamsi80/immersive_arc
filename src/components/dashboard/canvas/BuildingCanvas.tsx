@@ -2,9 +2,10 @@
 import React, { useEffect, useRef, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Environment, Html } from "@react-three/drei";
-import * as THREE from "three";
+// import * as THREE from "three";
 import { Block, Flat, BHK, FlatWithFloor } from "@/types/types";
-import { Model } from "@/components/Model";
+import { Model, ModelHandle } from "@/components/Model";
+// import { Mesh } from "three";
 
 export type BuildingMode = "explore" | "inspect";
 
@@ -35,33 +36,32 @@ export default function BuildingCanvas({
   filteredFlats,
   allFlats,
 }: Props) {
-  const modelRef = useRef<any>(null);
-  const isExplore = mode === "explore";
+  // const isExplore = mode === "explore";
+
+  const modelRef = useRef<ModelHandle>(null);
 
   useEffect(() => {
     if (!modelRef.current) return;
 
-    // Reset everything to gray
     modelRef.current.resetHighlight();
 
-    // If no filter → highlight allFlats
     const flatsToShow = filterBhk === "All" ? allFlats : filteredFlats;
 
     flatsToShow.forEach((flat) => {
       if (selectedFlat && flat.flatId === selectedFlat.flatId) {
-        modelRef.current.highlightFlat(flat.flatId, "blue"); // selected
+        modelRef.current?.highlightFlat(flat.flatId, "blue");
         return;
       }
       if (flat.status === "sold") {
-        modelRef.current.highlightFlat(flat.flatId, "red");
+        modelRef.current?.highlightFlat(flat.flatId, "red");
         return;
       }
       if (flat.status === "reserved") {
-        modelRef.current.highlightFlat(flat.flatId, "orange");
+        modelRef.current?.highlightFlat(flat.flatId, "orange");
         return;
       }
       if (flat.status === "available") {
-        modelRef.current.highlightFlat(flat.flatId, "green");
+        modelRef.current?.highlightFlat(flat.flatId, "green");
       }
     });
 

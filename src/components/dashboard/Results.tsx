@@ -54,7 +54,7 @@ export default function Results({
 
           <div className="grid grid-cols-3 gap-2">
             {getFeatures(filterBhk).map((f, i) => {
-              const Icon = f.icon as any;
+              const Icon = f.icon;
               return (
                 <div key={i} className="flex items-start gap-2 rounded-md border bg-background p-2">
                   <Icon className="h-4 w-4 text-primary mt-0.5" />

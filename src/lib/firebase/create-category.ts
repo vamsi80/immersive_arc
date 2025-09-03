@@ -1,7 +1,7 @@
 import { db } from "@/lib/firebase/client";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, DocumentData } from "firebase/firestore";
 
-export async function createCategory(projectId: string, categoryId: string, data: any) {
+export async function createCategory<T extends DocumentData>(projectId: string, categoryId: string, data: T) {
   try {
     const categoryRef = doc(db, "projects", projectId, "categories", categoryId);
     await setDoc(categoryRef, data);

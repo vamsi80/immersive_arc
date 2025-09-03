@@ -1,7 +1,7 @@
 import { db } from "@/lib/firebase/client";
-import { collection, addDoc, doc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, DocumentData } from "firebase/firestore";
 
-export async function createProjectInFirestore(data: any) {
+export async function createProjectInFirestore<T extends DocumentData>(data: T) {
   try {
     const docRef = await addDoc(collection(db, "projects"), data);
     if (!docRef.id) {

@@ -2,10 +2,18 @@
 import React, { forwardRef, useImperativeHandle, useLayoutEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import gsap from "gsap";
 
-export const Model = forwardRef(({ url }: { url: string }, ref) => {
-  const { scene } = useGLTF(url) as any;
+export type ModelHandle = {
+  highlightFlat: (flatId: string, color: string) => void;
+  resetHighlight: () => void;
+};
+
+type ModelProps = {
+  url: string;
+};
+
+export const Model = forwardRef<ModelHandle, ModelProps>(({ url }, ref) => {
+  const { scene } = useGLTF(url);
 
   useLayoutEffect(() => {
     // === Center & scale ===
@@ -23,9 +31,14 @@ export const Model = forwardRef(({ url }: { url: string }, ref) => {
 
     // Debug log
     console.log("Loaded model:", url);
-    scene.traverse((child: any) => {
-      if (child.isMesh) {
-        child.material.side = THREE.DoubleSide; // fix backface issue
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((mat) => (mat.side = THREE.DoubleSide));
+        } else {
+          (mesh.material as THREE.Material).side = THREE.DoubleSide;
+        }
       }
     });
   }, [scene, url]);
@@ -33,36 +46,47 @@ export const Model = forwardRef(({ url }: { url: string }, ref) => {
   // === Expose API ===
   useImperativeHandle(ref, () => ({
     highlightFlat: (flatId: string, color: string) => {
-      scene.traverse((child: any) => {
-        if (child.isMesh) {
-          const materials = Array.isArray(child.material) ? child.material : [child.material];
+      scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          const materials = Array.isArray(mesh.material)
+            ? mesh.material
+            : [mesh.material];
 
-          materials.forEach((mat: THREE.MeshStandardMaterial) => {
-            if (mat.name === flatId) {
-              mat.color.set(color);
-              mat.emissive.set(color);
-              mat.emissiveIntensity = 1.5;
+          materials.forEach((mat) => {
+            if ((mat as THREE.MeshStandardMaterial).name === flatId) {
+              const m = mat as THREE.MeshStandardMaterial;
+              m.color.set(color);
+              m.emissive.set(color);
+              m.emissiveIntensity = 1.5;
             }
           });
         }
       });
     },
     resetHighlight: () => {
-      scene.traverse((child: any) => {
-        if (child.isMesh) {
-          const materials = Array.isArray(child.material) ? child.material : [child.material];
+      scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          const materials = Array.isArray(mesh.material)
+            ? mesh.material
+            : [mesh.material];
 
-          materials.forEach((mat: THREE.MeshStandardMaterial) => {
-            if (mat.name.startsWith("flat_")) {
+          materials.forEach((mat) => {
+            const m = mat as THREE.MeshStandardMaterial;
+            if (m.name.startsWith("flat_")) {
               // reset to neutral gray
-              mat.color.setRGB(0.8, 0.8, 0.8);
-              mat.emissive.setRGB(0, 0, 0);
-              mat.emissiveIntensity = 0;
+              m.color.setRGB(0.8, 0.8, 0.8);
+              m.emissive.setRGB(0, 0, 0);
+              m.emissiveIntensity = 0;
             }
           });
         }
       });
     },
   }));
+
   return <primitive object={scene} dispose={null} />;
 });
+
+Model.displayName = "Model";

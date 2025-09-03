@@ -8,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, RotateCcw } from "lucide-react";
 import { BHK, Block, FlatStatus } from "@/types/types";
 
-function getAllFlats(block: Block) {
-  return Object.values(block.floors).flatMap((f) => Object.values(f.flats));
-}
+// function getAllFlats(block: Block) {
+//   return Object.values(block.floors).flatMap((f) => Object.values(f.flats));
+// }
 
 type Props = {
   query: string;
@@ -63,7 +63,7 @@ export default function Filters({
         {/* BHK */}
         <div className="col-span-2">
           <Label className="text-xs mb-1">BHK</Label>
-          <Select value={filterBhk} onValueChange={(v) => setFilterBhk(v as any)}>
+          <Select value={filterBhk} onValueChange={(v) => setFilterBhk(v as BHK | "All")}>
             <SelectTrigger className="h-9 w-full">
               <SelectValue placeholder="All" />
             </SelectTrigger>
@@ -82,7 +82,7 @@ export default function Filters({
           <Label className="text-xs mb-1">Floor</Label>
           <Select
             value={filterFloor}
-            onValueChange={(v) => setFilterFloor(v as any)}
+            onValueChange={(v) => setFilterFloor(v as string | "All")}
           >
             <SelectTrigger className="h-9 w-full">
               <SelectValue placeholder="All" />
@@ -101,7 +101,7 @@ export default function Filters({
         {/* Status */}
         <div className="col-span-2">
           <Label className="text-xs mb-1">Status</Label>
-          <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as any)}>
+          <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FlatStatus | "All")}>
             <SelectTrigger className="h-9 w-full">
               <SelectValue placeholder="All" />
             </SelectTrigger>
