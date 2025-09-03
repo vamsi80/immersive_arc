@@ -12,7 +12,7 @@ export const demoData: ProjectsRoot = {
         block_A: {
           blockId: "block_A",
           name: "Block A",
-          modelPath: "/BLOCKS_A.glb",
+          modelPath: "/BLOCK_A.glb",
           floors: {
             floor_1: {
               floorId: "floor_1",

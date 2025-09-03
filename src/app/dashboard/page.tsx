@@ -86,7 +86,7 @@ export default function DashboardPage() {
           projectName={selectedProject.name}
           blockName={selectedBlock.name}
         />
-        <div className="grid grid-cols-[1fr_380px] gap-4 p-4 h-[calc(100svh-56px)] overflow-hidden">
+        <div className="grid grid-cols-[1fr_580px] gap-4 p-4 h-[calc(100svh-56px)] overflow-hidden">
           {/* ✅ Middle: 3D + summary */}
           <BuildingPanel
             mode={mode}

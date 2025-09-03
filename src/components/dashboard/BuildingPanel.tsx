@@ -81,19 +81,17 @@ export default function BuildingPanel({
 
           {/* Unit 3D */}
           <TabsContent value="unit" className="m-0 h-full p-2">
-            <div className="h-full rounded-md bg-muted flex items-center justify-center">
-              {filterBhk === "All" && !selectedFlat ? (
-                <div className="text-sm text-muted-foreground">
-                  Select the unit BHK
-                </div>
-              ) : selectedFlat ? (
-                <UnitCanvas bhk={selectedFlat.bhk as BHK} />
-              ) : (
-                <div className="text-sm text-muted-foreground">
-                  Select a unit ({filterBhk})
-                </div>
-              )}
-            </div>
+            <TabsContent value="unit" className="m-0 h-full p-2">
+              <div className="h-full rounded-md bg-muted flex items-center justify-center">
+                {filterBhk === "All" && !selectedFlat ? (
+                  <div className="text-sm text-muted-foreground">
+                    Select the unit BHK
+                  </div>
+                ) : (
+                  <UnitCanvas bhk={(selectedFlat?.bhk || filterBhk) as BHK} />
+                )}
+              </div>
+            </TabsContent>
           </TabsContent>
 
           {/* Floorplans */}
