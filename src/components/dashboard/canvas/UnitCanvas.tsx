@@ -8,13 +8,13 @@ import { bhkModels } from "@/types/bhkModels";
 
 type Props = { bhk: BHK };
 
-// ✅ Safe wrapper for GLTF loading
 function SafeBHKModel({ bhk }: { bhk: BHK }) {
   const path = bhkModels[bhk];
 
-  // Always call hook (safe: path can be string | undefined)
-  const gltf = path ? useGLTF(path) : null;
+  // ✅ Always call hook, use fallback path if missing
+  const { scene } = useGLTF(path ?? "/placeholder.glb");
 
+  // If path is invalid, show message instead of model
   if (!path) {
     return (
       <Html center>
@@ -25,25 +25,17 @@ function SafeBHKModel({ bhk }: { bhk: BHK }) {
     );
   }
 
-  if (!gltf) {
-    return null; // Suspense will handle loading fallback
-  }
-
-  return <primitive object={gltf.scene} scale={1.2} />;
+  return <primitive object={scene} scale={1.2} />;
 }
+
 
 export default function UnitCanvas({ bhk }: Props) {
   return (
     <Canvas dpr={[1, 2]} className="rounded-md bg-[hsl(var(--card))]">
       <PerspectiveCamera makeDefault position={[4, 3, 6]} fov={50} />
 
-      {/* Ambient light for base illumination */}
       <ambientLight intensity={0.4} />
-
-      {/* Hemisphere light for natural sky/ground tint */}
       <hemisphereLight color={"#ffffff"} groundColor={"#bbbbbb"} intensity={0.6} />
-
-      {/* Main key light */}
       <directionalLight
         position={[8, 10, 6]}
         intensity={1.2}
@@ -51,14 +43,9 @@ export default function UnitCanvas({ bhk }: Props) {
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
       />
-
-      {/* Fill light from opposite side */}
       <directionalLight position={[-6, 6, -4]} intensity={0.5} color={"#ffeedd"} />
-
-      {/* Rim light behind model for highlights */}
       <pointLight position={[0, 5, -5]} intensity={0.6} color={"#88ccff"} />
 
-      {/* Model or loader */}
       <Suspense
         fallback={
           <Html center>

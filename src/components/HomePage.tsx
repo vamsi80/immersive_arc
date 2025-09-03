@@ -1,4 +1,4 @@
-import ModelViewer from "./modelViewer";
+// import ModelViewer from "./modelViewer";
 
 // src/app/home/page.tsx
 export default function HomePage() {
@@ -6,7 +6,7 @@ export default function HomePage() {
     <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">Welcome to the Home Page 🎉</h1>
-        <ModelViewer />
+        {/* <ModelViewer /> */}
       </div>
     </main>
   );

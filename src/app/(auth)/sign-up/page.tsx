@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/firebase/getCurrentUser";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function signUpPage() {
+export default function SignUpPage() {
   const router = useRouter();
   useEffect(() => {
     getCurrentUser().then((u) => {

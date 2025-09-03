@@ -8,6 +8,14 @@ interface UpdatedFields {
   approvedBy?: string;
 }
 
+interface Assignee {
+  uid: string;
+  name?: string;
+  status?: "completed" | "not_started" | "in_progress";
+  approveStatus?: "approved" | "rejected" | "not_sent";
+  approvedBy?: string;
+}
+
 export const updateAssigneeProgress = async (
   projectId: string,
   categoryId: string,
@@ -29,7 +37,7 @@ export const updateAssigneeProgress = async (
     }
 
     const task = snapshot.data();
-    const assignees: any[] = task.assignees || [];
+    const assignees: Assignee[] = (task.assignees as Assignee[]) || [];
 
     const currentIndex = task.currentAssigneeIndex;
 
@@ -51,12 +59,11 @@ export const updateAssigneeProgress = async (
       approvedBy,
     };
 
-    let currentAssignee = assignees[task.currentAssigneeIndex];
+    let currentAssignee: Assignee | null = assignees[task.currentAssigneeIndex];
     let nextIndex;
 
-    const { status, approveStatus } = currentAssignee;
+    const { approveStatus } = currentAssignee;
 
-    // If current is both completed + approved → move to next assignee
     if (approveStatus === "approved") {
       currentAssignee.status = "completed";
       nextIndex = task.currentAssigneeIndex + 1;
@@ -64,7 +71,6 @@ export const updateAssigneeProgress = async (
         assignees[nextIndex].status = "in_progress";
         currentAssignee = assignees[nextIndex];
       } else {
-        // All done
         currentAssignee = null;
       }
     }

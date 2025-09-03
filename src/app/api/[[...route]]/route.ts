@@ -67,8 +67,9 @@ app.post("/check-user", async (c) => {
     if (
       err &&
       typeof err === "object" &&
+      err !== null &&
       "code" in err &&
-      (err as any).code === "auth/user-not-found"
+      (err as { code?: string }).code === "auth/user-not-found"
     ) {
       return c.json({ exists: false });
     }
