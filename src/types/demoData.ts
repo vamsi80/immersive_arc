@@ -12,7 +12,7 @@ export const demoData: ProjectsRoot = {
         block_A: {
           blockId: "block_A",
           name: "Block A",
-          modelPath: "/BLOCK_A.glb",
+          modelPath: "https://mnqcklxrspemnfhxnwaz.supabase.co/storage/v1/object/public/models/BLOCK_A.glb",
           floors: {
             floor_1: {
               floorId: "floor_1",
@@ -184,7 +184,7 @@ export const demoData: ProjectsRoot = {
         block_B: {
           blockId: "block_B",
           name: "Block B",
-          modelPath:"/BLOCK_A.glb",
+          modelPath:"https://mnqcklxrspemnfhxnwaz.supabase.co/storage/v1/object/public/models/BLOCK_A.glb",
           floors: {
             floor_1: {
               floorId: "floor_1",

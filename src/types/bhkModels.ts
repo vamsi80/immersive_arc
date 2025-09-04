@@ -3,10 +3,10 @@ import { BHK } from "@/types/types";
 
 // ✅ Mapping of BHK types to GLB file paths
 export const bhkModels: Record<BHK, string | null> = {
-  "2BHK": "/models/2_BHK.glb",
-  "2.5BHK": "/models/2.5BHK.glb",
-  "3BHK": "/models/3_BHK.glb",
-  "4BHK": "/models/4_BHK.glb",
+  "2BHK": "https://mnqcklxrspemnfhxnwaz.supabase.co/storage/v1/object/public/models/2_BHK.glb",
+  "2.5BHK": "https://mnqcklxrspemnfhxnwaz.supabase.co/storage/v1/object/public/models/2.5BHK.glb",
+  "3BHK": "https://mnqcklxrspemnfhxnwaz.supabase.co/storage/v1/object/public/models/3_BHK.glb",
+  "4BHK": "https://mnqcklxrspemnfhxnwaz.supabase.co/storage/v1/object/public/models/4_BHK.glb",
 };
 
 // ✅ Preload available models
