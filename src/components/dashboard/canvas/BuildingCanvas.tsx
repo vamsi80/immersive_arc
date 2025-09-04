@@ -72,11 +72,6 @@ export default function BuildingCanvas({
     return <div className="flex items-center justify-center h-full">No model available</div>;
   }
 
-  <Suspense fallback={<Loader />}>
-    <Model ref={modelRef} url={block.modelPath} />
-    <Environment preset="city" intensity={0.1} />
-  </Suspense>
-
   return (
     <div className="relative w-full h-full">
       {/* 3D Canvas */}
