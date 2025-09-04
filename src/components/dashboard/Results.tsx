@@ -33,78 +33,87 @@ export default function Results({
   const allFlats = getAllFlats(selectedBlock);
 
   return (
-    <Card className="p-3 shadow-subtle overflow-y-auto">
-      <div className="flex items-center justify-between mb-2">
+    // make the card a flex column so the list can scroll
+    <Card className="p-0 shadow-subtle overflow-hidden flex min-h-0 flex-col">
+      {/* sticky header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-background/95 sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="text-sm text-muted-foreground">Results</div>
         <div className="text-xs">{filteredFlats.length} flats</div>
       </div>
 
-      {/* BHK summary features */}
-      {filterBhk !== "All" && (
-        <div className="mb-3 rounded-lg border bg-muted/30 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium">{filterBhk} Apartment</div>
-            <div className="text-xs text-muted-foreground">
-              Available{" "}
-              {allFlats.filter((f) => f.bhk === filterBhk && f.status === "available").length} • Sold{" "}
-              {allFlats.filter((f) => f.bhk === filterBhk && f.status === "sold").length} • Reserved{" "}
-              {allFlats.filter((f) => f.bhk === filterBhk && f.status === "reserved").length}
+      <div className="p-3 overflow-auto min-h-0 flex-1">
+        {/* BHK summary features */}
+        {filterBhk !== "All" && (
+          <div className="mb-3 rounded-lg border bg-muted/30 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm font-medium">{filterBhk} Apartment</div>
+              <div className="text-xs text-muted-foreground">
+                Available{" "}
+                {allFlats.filter((f) => f.bhk === filterBhk && f.status === "available").length} • Sold{" "}
+                {allFlats.filter((f) => f.bhk === filterBhk && f.status === "sold").length} • Reserved{" "}
+                {allFlats.filter((f) => f.bhk === filterBhk && f.status === "reserved").length}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            {getFeatures(filterBhk).map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <div key={i} className="flex items-start gap-2 rounded-md border bg-background p-2">
-                  <Icon className="h-4 w-4 text-primary mt-0.5" />
-                  <div>
-                    <div className="text-xs font-medium">{f.label}</div>
-                    <div className="text-[11px] text-muted-foreground">{f.sub}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {getFeatures(filterBhk).map((f, i) => {
+                const Icon = f.icon;
+                return (
+                  <div key={i} className="flex items-start gap-2 rounded-md border bg-background p-2">
+                    <Icon className="h-4 w-4 text-primary mt-0.5" />
+                    <div>
+                      <div className="text-xs font-medium">{f.label}</div>
+                      <div className="text-[11px] text-muted-foreground">{f.sub}</div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Flats list */}
-      <div className="grid grid-cols-3 gap-2 overflow-y-auto pr-1 flex-1 scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-muted-foreground/40 scrollbar-track-transparent">
-        {filteredFlats.map((f) => (
-          <button
-            key={f.flatId}
-            onClick={() => setSelectedFlat(f)}
-            className={cn(
-              "rounded-md border h-20 p-2 text-left",
-              selectedFlat?.flatId === f.flatId && "border-primary bg-primary/5"
-            )}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium">{f.flatId}</span>
-              <Badge variant="secondary" className="text-[10px]">
-                {f.bhk}
-              </Badge>
-            </div>
-            <div className="text-xs text-muted-foreground">Floor {f.floorId.replace("floor_", "")}</div>
-            <div
+        {/* Flats grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          {filteredFlats.map((f) => (
+            <button
+              key={f.flatId}
+              onClick={() => setSelectedFlat(f)}
               className={cn(
-                "mt-1 text-[11px]",
-                f.status === "available"
-                  ? "text-green-600"
-                  : f.status === "sold"
-                  ? "text-red-600"
-                  : "text-amber-600"
+                "rounded-md border h-24 p-2 text-left transition-colors",
+                "active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-primary/30",
+                selectedFlat?.flatId === f.flatId && "border-primary bg-primary/5"
               )}
+              aria-pressed={selectedFlat?.flatId === f.flatId}
             >
-              {f.status}
-            </div>
-          </button>
-        ))}
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium truncate">{f.flatId}</span>
+                <Badge variant="secondary" className="text-[10px]">
+                  {f.bhk}
+                </Badge>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Floor {f.floorId.replace("floor_", "")}
+              </div>
+              <div
+                className={cn(
+                  "mt-1 text-[11px]",
+                  f.status === "available"
+                    ? "text-green-600"
+                    : f.status === "sold"
+                      ? "text-red-600"
+                      : "text-amber-600"
+                )}
+              >
+                {f.status}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </Card>
   );
 }
+
 
 // Utility: BHK features
 function getFeatures(bhk: BHK) {

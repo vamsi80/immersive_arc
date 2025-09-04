@@ -5,7 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Blocks } from "lucide-react";
 import BuildingCanvas, { BuildingMode } from "@/components/dashboard/canvas/BuildingCanvas";
 import UnitCanvas from "@/components/dashboard/canvas/UnitCanvas";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
 import { Project, Block, Floor, Flat, BHK, FlatWithFloor } from "@/types/types";
 
@@ -13,7 +19,7 @@ function getAllFlats(block: Block): FlatWithFloor[] {
   return Object.values(block.floors).flatMap((floor) =>
     Object.values(floor.flats).map((flat) => ({
       ...flat,
-      floorId: floor.floorId, // ✅ include floorId
+      floorId: floor.floorId,
     }))
   );
 }
@@ -34,7 +40,6 @@ export default function BuildingPanel({
   mode,
   selectedProject,
   selectedBlock,
-  selectedFloor,
   selectedFlat,
   filterBhk,
 }: Props) {
@@ -50,98 +55,119 @@ export default function BuildingPanel({
   const reserved = allFlats.filter((f) => f.status === "reserved").length;
 
   return (
-    <div className="grid grid-rows-[1fr_auto] gap-4 overflow-hidden">
-      <Card className="p-0 shadow-elevated overflow-hidden">
-        <Tabs defaultValue="block" className="h-full grid grid-rows-[auto_1fr]">
-          <TabsList className="m-2">
-            <TabsTrigger value="block">Block 3D</TabsTrigger>
-            <TabsTrigger value="unit">Unit 3D</TabsTrigger>
-            <TabsTrigger value="plans">Floorplans</TabsTrigger>
+    <div className="grid h-full min-h-0 grid-rows-[80%_18%] gap-3 md:gap-4 overflow-hidden">
+      <Card className="p-0 shadow-elevated overflow-hidden min-h-0">
+        <Tabs defaultValue="block" className="grid grid-rows-[auto_1fr] h-full min-h-0">
+          <TabsList
+            className="
+              sticky top-0 z-10 m-0 px-2 py-2
+              border rounded-none
+              bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60
+              overflow-x-auto gap-2
+            "
+          >
+            <TabsTrigger className="whitespace-nowrap" value="block">
+              Block 3D
+            </TabsTrigger>
+            <TabsTrigger className="whitespace-nowrap" value="unit">
+              Unit 3D
+            </TabsTrigger>
+            <TabsTrigger className="whitespace-nowrap" value="plans">
+              Floorplans
+            </TabsTrigger>
           </TabsList>
 
-          {/* Block 3D */}
-          <TabsContent value="block" className="m-0 h-full p-2">
-            <div className="h-full w-full relative">
-              <BuildingCanvas
-                mode={mode}
-                block={selectedBlock}
-                selectedFlat={selectedFlat}
-                filterBhk={filterBhk}
-                filteredFlats={filteredFlats}
-                allFlats={allFlats}
-              />
-              <div className="absolute top-3 left-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-secondary text-secondary-foreground px-3 py-1 text-xs shadow-subtle">
-                  <Blocks className="h-4 w-4 opacity-70" />
-                  <span>{selectedBlock.name}</span>
+          {/* Content area must be flex-1 + min-h-0 so children can scroll */}
+          <div className="flex-1 min-h-0">
+            {/* Block 3D */}
+            <TabsContent value="block" className="m-0 h-full p-2">
+              <div className="relative h-full min-h-0">
+                <BuildingCanvas
+                  mode={mode}
+                  block={selectedBlock}
+                  selectedFlat={selectedFlat}
+                  filterBhk={filterBhk}
+                  filteredFlats={filteredFlats}
+                  allFlats={allFlats}
+                />
+                <div className="absolute top-3 left-3">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-secondary text-secondary-foreground px-3 py-1 text-xs shadow-subtle">
+                    <Blocks className="h-4 w-4 opacity-70" />
+                    <span className="max-w-[40vw] truncate">{selectedBlock.name}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* Unit 3D */}
-          <TabsContent value="unit" className="m-0 h-full p-2">
+            {/* Unit 3D */}
             <TabsContent value="unit" className="m-0 h-full p-2">
-              <div className="h-full rounded-md bg-muted flex items-center justify-center">
+              <div className="h-full min-h-0 flex items-center justify-center p-2">
                 {filterBhk === "All" && !selectedFlat ? (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-muted-foreground text-center px-3">
                     Select the unit BHK
                   </div>
                 ) : (
-                  <UnitCanvas bhk={(selectedFlat?.bhk || filterBhk) as BHK} />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <UnitCanvas bhk={(selectedFlat?.bhk || filterBhk) as BHK} />
+                  </div>
                 )}
               </div>
             </TabsContent>
-          </TabsContent>
 
-          {/* Floorplans */}
-          <TabsContent value="plans" className="m-0 h-full p-2">
-            <div className="h-full rounded-md bg-muted relative">
-              {selectedFlat ? (
-                <div className="h-full flex items-center justify-center">
-                  <Carousel className="w-[320px]" opts={{ loop: true }}>
+            {/* Floorplans */}
+            <TabsContent value="plans" className="m-0 h-full p-2">
+              <div className="h-full min-h-0 relative flex items-center justify-center p-3">
+                {selectedFlat ? (
+                  <Carousel className="w-full max-w-sm sm:max-w-md" opts={{ loop: true }}>
                     <CarouselContent>
-                      {["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"].map(
-                        (src, idx) => (
-                          <CarouselItem key={idx}>
-                            <img
-                              src={src}
-                              alt={`Floorplan ${idx + 1}`}
-                              className="h-48 w-full object-contain rounded"
-                            />
-                          </CarouselItem>
-                        )
-                      )}
+                      {["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"].map((src, idx) => (
+                        <CarouselItem key={idx} className="flex items-center justify-center">
+                          <img
+                            src={src}
+                            alt={`Floorplan ${idx + 1}`}
+                            className="h-56 sm:h-72 w-full object-contain rounded"
+                          />
+                        </CarouselItem>
+                      ))}
                     </CarouselContent>
                     <CarouselPrevious />
                     <CarouselNext />
                   </Carousel>
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                  Select a unit to view floor plans
-                </div>
-              )}
-            </div>
-          </TabsContent>
+                ) : (
+                  <div className="text-sm text-muted-foreground text-center px-3">
+                    Select a unit to view floor plans
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </div>
         </Tabs>
       </Card>
 
       {/* Summary card */}
-      <Card className="px-10 flex flex-row items-center justify-between shadow-subtle">
+      <Card
+        className="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 shadow-subtle"
+      >
         <div className="space-y-1">
           <div className="text-sm text-muted-foreground">
             {selectedProject.name} • {selectedBlock.name}
           </div>
           <div className="text-sm">
-            Floors: <span className="font-medium">{Object.keys(selectedBlock.floors).length}</span> •
+            Floors: <span className="font-medium">{Object.keys(selectedBlock.floors).length}</span> •{" "}
             Units: <span className="font-medium">{allFlats.length}</span>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Badge variant="secondary">Available {available}</Badge>
-          <Badge variant="secondary">Sold {sold}</Badge>
-          <Badge variant="secondary">Reserved {reserved}</Badge>
+
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary" className="whitespace-nowrap">
+            Available {available}
+          </Badge>
+          <Badge variant="secondary" className="whitespace-nowrap">
+            Sold {sold}
+          </Badge>
+          <Badge variant="secondary" className="whitespace-nowrap">
+            Reserved {reserved}
+          </Badge>
         </div>
       </Card>
     </div>

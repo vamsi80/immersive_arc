@@ -1,11 +1,9 @@
 "use client";
-import React, { useEffect, useRef, Suspense } from "react";
+import React, { useEffect, useMemo, useRef, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Environment, Html } from "@react-three/drei";
-// import * as THREE from "three";
+import { OrbitControls, PerspectiveCamera, Environment, Html, Instance } from "@react-three/drei";
 import { Block, Flat, BHK, FlatWithFloor } from "@/types/types";
 import { Model, ModelHandle } from "@/components/Model";
-// import { Mesh } from "three";
 
 export type BuildingMode = "explore" | "inspect";
 
@@ -21,7 +19,7 @@ type Props = {
 function Loader() {
   return (
     <Html center>
-      <div className="text-xs bg-background/80 px-3 py-2 rounded">
+      <div className="text-xs bg-background/80 px-3 py-2 rounded shadow">
         Loading model…
       </div>
     </Html>
@@ -36,13 +34,19 @@ export default function BuildingCanvas({
   filteredFlats,
   allFlats,
 }: Props) {
-  // const isExplore = mode === "explore";
-
   const modelRef = useRef<ModelHandle>(null);
+
+  // pick URL: direct or proxied (uncomment to force proxy)
+  const modelUrl = useMemo(() => {
+    // return toModelUrl(block.modelPath); // ← enable if you added the /api/models route
+    return block.modelPath;
+  }, [block.modelPath]);
+
+  // perf knobs for mobile
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   useEffect(() => {
     if (!modelRef.current) return;
-
     modelRef.current.resetHighlight();
 
     const flatsToShow = filterBhk === "All" ? allFlats : filteredFlats;
@@ -64,49 +68,53 @@ export default function BuildingCanvas({
         modelRef.current?.highlightFlat(flat.flatId, "green");
       }
     });
-
     console.log("🎯 Applied highlights for:", flatsToShow.map((f) => f.flatId));
-  }, [allFlats, filteredFlats, selectedFlat, filterBhk, block.modelPath]);
+  }, [allFlats, filteredFlats, selectedFlat, filterBhk, modelUrl]);
 
   if (!block.modelPath) {
     return <div className="flex items-center justify-center h-full">No model available</div>;
   }
 
   return (
-    <div className="relative w-full h-full">
-      {/* 3D Canvas */}
-      <Canvas dpr={[1, 2]} className="rounded-md bg-[hsl(var(--card))]">
+    <div className="relative w-full h-full min-h-0">
+      <Canvas
+        frameloop="demand"
+        dpr={[1, isMobile ? 1.5 : 2]}
+        className=" bg-[hsl(var(--card))]"
+        gl={{
+          powerPreference: "high-performance",
+          antialias: !isMobile,
+          alpha: true,
+          preserveDrawingBuffer: false,
+        }}
+        style={{ touchAction: "none" }}
+        onCreated={({ gl }) => {
+          gl.getContext().canvas.addEventListener("webglcontextlost", (e) => e.preventDefault(), {
+            passive: false,
+          });
+        }}
+      >
         <PerspectiveCamera makeDefault position={[4, 3, 6]} fov={50} />
 
-        {/* Ambient light for base illumination */}
+        {/* Lights (lighter on mobile) */}
         <ambientLight intensity={0.4} />
-
-        {/* Hemisphere light for natural sky/ground tint */}
-        <hemisphereLight color={"#ffffff"} groundColor={"#bbbbbb"} intensity={0.6} />
-
-        {/* Main key light */}
+        <hemisphereLight color="#ffffff" groundColor="#bbbbbb" intensity={0.6} />
         <directionalLight
           position={[8, 10, 6]}
-          intensity={1.2}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
+          intensity={isMobile ? 0.9 : 1.2}
+          castShadow={!isMobile}
+          shadow-mapSize-width={isMobile ? 1024 : 2048}
+          shadow-mapSize-height={isMobile ? 1024 : 2048}
         />
+        <directionalLight position={[-6, 6, -4]} intensity={0.5} color="#ffeedd" />
+        <pointLight position={[0, 5, -5]} intensity={0.6} color="#88ccff" />
 
-        {/* Fill light from opposite side */}
-        <directionalLight
-          position={[-6, 6, -4]}
-          intensity={0.5}
-          color={"#ffeedd"}
-        />
-
-        {/* Rim light behind model for highlights */}
-        <pointLight position={[0, 5, -5]} intensity={0.6} color={"#88ccff"} />
-
-        {/* Model or loader */}
         <Suspense fallback={<Loader />}>
-          <Model ref={modelRef} url={block.modelPath} />
-          <Environment preset="city" environmentIntensity={0.1} />
+          <Model
+            ref={modelRef}
+            url={modelUrl}
+          />
+          <Environment preset="city" environmentIntensity={0.08} />
         </Suspense>
 
         <OrbitControls
@@ -115,10 +123,11 @@ export default function BuildingCanvas({
           maxPolarAngle={Math.PI / 2.2}
           minDistance={2}
           maxDistance={10}
+          enableDamping
+          dampingFactor={0.08}
         />
       </Canvas>
 
-      {/* Legend in corner */}
       <div className="absolute bottom-3 right-3 flex gap-3 bg-background/70 rounded-lg px-3 py-2 shadow text-xs">
         <div className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-blue-500"></span>
