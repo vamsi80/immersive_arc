@@ -111,7 +111,7 @@ export default function BuildingCanvas({
         {/* Model or loader */}
         <Suspense fallback={<Loader />}>
           <Model ref={modelRef} url={block.modelPath} />
-          <Environment preset="city" intensity={0.1} />
+          <Environment preset="city" environmentIntensity={0.1} />
         </Suspense>
 
         <OrbitControls
