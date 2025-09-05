@@ -80,7 +80,7 @@ export default function BuildingCanvas({
       <Canvas
         frameloop="demand"
         dpr={[1, isMobile ? 1.5 : 2]}
-        className=" bg-[hsl(var(--card))]"
+        className="bg-[hsl(var(--card))]"
         gl={{
           powerPreference: "high-performance",
           antialias: !isMobile,
@@ -89,32 +89,32 @@ export default function BuildingCanvas({
         }}
         style={{ touchAction: "none" }}
         onCreated={({ gl }) => {
-          gl.getContext().canvas.addEventListener("webglcontextlost", (e) => e.preventDefault(), {
-            passive: false,
-          });
+          gl.getContext().canvas.addEventListener(
+            "webglcontextlost",
+            (e) => e.preventDefault(),
+            { passive: false }
+          );
         }}
       >
         <PerspectiveCamera makeDefault position={[4, 3, 6]} fov={50} />
 
-        {/* Lights (lighter on mobile) */}
-        <ambientLight intensity={0.4} />
-        <hemisphereLight color="#ffffff" groundColor="#bbbbbb" intensity={0.6} />
+        {/* One main light */}
         <directionalLight
-          position={[8, 10, 6]}
-          intensity={isMobile ? 0.9 : 1.2}
+          position={[5, 8, 5]}
+          intensity={1.2}
           castShadow={!isMobile}
-          shadow-mapSize-width={isMobile ? 1024 : 2048}
-          shadow-mapSize-height={isMobile ? 1024 : 2048}
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
         />
-        <directionalLight position={[-6, 6, -4]} intensity={0.5} color="#ffeedd" />
-        <pointLight position={[0, 5, -5]} intensity={0.6} color="#88ccff" />
+
+        {/* Optional: tiny ambient to avoid black shadows */}
+        <ambientLight intensity={0.2} />
 
         <Suspense fallback={<Loader />}>
-          <Model
-            ref={modelRef}
-            url={modelUrl}
-          />
-          <Environment preset="city" environmentIntensity={0.08} />
+          <Model ref={modelRef} url={modelUrl} />
+
+          {/* Environment is CRUCIAL for glass reflections */}
+          <Environment preset="city" environmentIntensity={1} />
         </Suspense>
 
         <OrbitControls

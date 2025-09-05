@@ -211,7 +211,7 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-auto">
+              <div className="min-h-0 flex-1 overflow-auto p-2">
                 <RightPanel
                   query={query}
                   setQuery={setQuery}

@@ -39,7 +39,7 @@ export default function RightPanel({
   setSelectedFlat,
 }: Props) {
   return (
-    <div className="grid grid-rows-[auto_1fr] gap-3 md:gap-4 overflow-hidden min-h-0">
+    <div className="h-full grid grid-rows-[auto_1fr] gap-3 md:gap-4 min-h-0">
       <Filters
         query={query}
         setQuery={setQuery}
@@ -53,6 +53,7 @@ export default function RightPanel({
         selectedBlock={selectedBlock}
       />
       <Results
+        className="h-full"
         filteredFlats={filteredFlats}
         selectedFlat={selectedFlat}
         setSelectedFlat={setSelectedFlat}
