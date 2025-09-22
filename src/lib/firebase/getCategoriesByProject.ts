@@ -1,5 +1,5 @@
 import { getFirestore, collection, getDocs } from 'firebase/firestore'
-import { app } from "@/lib/firebase/client"; // adjust if your firebase app export is elsewhere
+import { app } from "@/lib/firebase/client";
 
 export interface Category {
   id: string

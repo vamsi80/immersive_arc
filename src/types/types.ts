@@ -106,6 +106,7 @@ export interface Flat {
 
 export interface Floor {
   floorId: string;
+  name?: string;
   flats: Record<string, Flat>;
 }
 
@@ -115,7 +116,7 @@ export interface Block {
   blockId: string;
   name: string;
   floors: Record<string, Floor>;
-  modelPath: string;
+  modelPath?: string;
 }
 
 export interface Project {

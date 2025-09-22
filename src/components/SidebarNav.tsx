@@ -24,6 +24,7 @@ import {
   Blocks,
   PanelRightOpen,
   PanelLeftClose,
+  Plus,
 } from "lucide-react";
 import { Project, Block } from "@/types/types";
 import Image from "next/image";
@@ -36,6 +37,8 @@ type Props = {
   onSelectProject: (id: string) => void;
   selectedBlockId: string;
   onSelectBlock: (id: string) => void;
+  onAddProject?: () => void;
+  onAddBlock?: (projectId: string) => void;
 };
 
 export default function SidebarNav({
@@ -44,6 +47,8 @@ export default function SidebarNav({
   onSelectProject,
   selectedBlockId,
   onSelectBlock,
+  onAddProject,
+  onAddBlock,
 }: Props) {
   const selectedProject = projects.find((p) => p.projectId === selectedProjectId)!;
 
@@ -79,9 +84,22 @@ export default function SidebarNav({
 
         <SidebarContent className="overflow-auto">
           <SidebarGroup>
-            <SidebarGroupLabel className="group-data-[collapsible=icon]/sidebar:sr-only">
-              Societies
-            </SidebarGroupLabel>
+            <div className="flex items-center justify-between px-2">
+              <SidebarGroupLabel className="group-data-[collapsible=icon]/sidebar:sr-only">
+                Societies
+              </SidebarGroupLabel>
+              {onAddProject && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={onAddProject}
+                  aria-label="Add society"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
 
             <div className="px-2">
               <Select value={selectedProjectId} onValueChange={(id) => onSelectProject(id)}>
@@ -105,27 +123,57 @@ export default function SidebarNav({
           <SidebarSeparator />
 
           <SidebarGroup>
-            <SidebarGroupLabel className="group-data-[collapsible=icon]/sidebar:sr-only">
-              Blocks
-            </SidebarGroupLabel>
+            <div className="flex items-center justify-between px-2">
+              <SidebarGroupLabel className="group-data-[collapsible=icon]/sidebar:sr-only">
+                Blocks
+              </SidebarGroupLabel>
+              {onAddBlock && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={() => onAddBlock(selectedProjectId)}
+                  aria-label="Add block"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
 
-            <SidebarMenu>
-              {Object.values(selectedProject.blocks).map((b: Block) => (
-                <SidebarMenuItem key={b.blockId}>
-                  <SidebarMenuButton
-                    isActive={b.blockId === selectedBlockId}
-                    onClick={() => onSelectBlock(b.blockId)}
-                    className="overflow-hidden text-ellipsis whitespace-nowrap"
-                    aria-label={b.name}
+            {Object.keys(selectedProject.blocks).length === 0 ? (
+              <div className="p-4">
+                <div className="mx-auto flex flex-col items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAddBlock?.(selectedProjectId)}
+                    className="flex items-center gap-2"
                   >
-                    <Blocks className="opacity-70 shrink-0" />
-                    <span className="truncate group-data-[collapsible=icon]/sidebar:hidden">
-                      {b.name}
-                    </span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+                    <Plus className="h-4 w-4" />
+                    Add block
+                  </Button>
+                  <div className="text-sm text-muted-foreground">No blocks yet in this society</div>
+                </div>
+              </div>
+            ) : (
+              <SidebarMenu>
+                {Object.values(selectedProject.blocks).map((b: Block) => (
+                  <SidebarMenuItem key={b.blockId}>
+                    <SidebarMenuButton
+                      isActive={b.blockId === selectedBlockId}
+                      onClick={() => onSelectBlock(b.blockId)}
+                      className="overflow-hidden text-ellipsis whitespace-nowrap"
+                      aria-label={b.name}
+                    >
+                      <Blocks className="opacity-70 shrink-0" />
+                      <span className="truncate group-data-[collapsible=icon]/sidebar:hidden">
+                        {b.name}
+                      </span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            )}
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>

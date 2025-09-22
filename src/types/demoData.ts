@@ -11,7 +11,7 @@ export const demoData: ProjectsRoot = {
         block_A: {
           blockId: "block_A",
           name: "Block A",
-          modelPath: "/BlockA.glb",
+          modelPath: "/BlockA1.glb",
           floors: {
             floor_1: {
               floorId: "floor_1",

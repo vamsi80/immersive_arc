@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Blocks } from "lucide-react";
+import { Blocks, Plus } from "lucide-react";
 import BuildingCanvas, { BuildingMode } from "@/components/dashboard/canvas/BuildingCanvas";
 import UnitCanvas from "@/components/dashboard/canvas/UnitCanvas";
 import {
@@ -14,8 +14,10 @@ import {
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
 import { Project, Block, Floor, Flat, BHK, FlatWithFloor } from "@/types/types";
+import { Button } from "../ui/button";
 
-function getAllFlats(block: Block): FlatWithFloor[] {
+function getAllFlats(block?: Block | null): FlatWithFloor[] {
+  if (!block) return [];
   return Object.values(block.floors).flatMap((floor) =>
     Object.values(floor.flats).map((flat) => ({
       ...flat,
@@ -27,13 +29,15 @@ function getAllFlats(block: Block): FlatWithFloor[] {
 type Props = {
   mode: BuildingMode;
   selectedProject: Project;
-  selectedBlock: Block;
+  selectedBlock: Block | null;
   selectedFloor: Floor | null;
   selectedFlat: Flat | null;
   setSelectedFlat: (u: Flat | null) => void;
   filterBhk: BHK | "All";
   filteredFlats: FlatWithFloor[];
   allFlats: FlatWithFloor[];
+  isAdmin?: boolean;
+  onAddBlock?: (projectId: string) => void;
 };
 
 export default function BuildingPanel({
@@ -41,8 +45,14 @@ export default function BuildingPanel({
   selectedProject,
   selectedBlock,
   selectedFlat,
+  // setSelectedFlat,
+  isAdmin,
+  onAddBlock,
   filterBhk,
+  filteredFlats: _filteredFlats,
+  allFlats: _allFlats,
 }: Props) {
+  // safe: getAllFlats now accepts null/undefined
   const allFlats = getAllFlats(selectedBlock);
 
   const filteredFlats = allFlats.filter((flat) => {
@@ -54,6 +64,60 @@ export default function BuildingPanel({
   const sold = allFlats.filter((f) => f.status === "sold").length;
   const reserved = allFlats.filter((f) => f.status === "reserved").length;
 
+  // If no block selected (or no blocks exist) show CTA / placeholder
+  if (!selectedBlock) {
+    return (
+      <div className="h-full min-h-0 flex flex-col gap-3 p-4">
+        <Card className="flex-1 flex items-center justify-center">
+          <div className="text-center px-4">
+            <div className="mb-3 text-lg font-semibold">No blocks available</div>
+            <p className="text-sm text-muted-foreground mb-4">
+              This society doesn't have any blocks yet. Add a block to view 3D models and units.
+            </p>
+
+            {isAdmin ? (
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  onClick={() => onAddBlock?.(selectedProject.projectId)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add block
+                </Button>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">Contact the admin to add blocks.</div>
+            )}
+          </div>
+        </Card>
+
+        {/* Summary area (empty state) */}
+        <Card className="px-4 py-3 flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">{selectedProject.name}</div>
+            <div className="text-sm">
+              Floors: <span className="font-medium">0</span> • Units: <span className="font-medium">0</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="whitespace-nowrap">
+              Available {available}
+            </Badge>
+            <Badge variant="secondary" className="whitespace-nowrap">
+              Sold {sold}
+            </Badge>
+            <Badge variant="secondary" className="whitespace-nowrap">
+              Reserved {reserved}
+            </Badge>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // From here on TS knows selectedBlock is not null (early return above),
+  // but to be explicit we use selectedBlock! where necessary.
   return (
     <div className="grid h-full min-h-0 grid-rows-[80%_18%] gap-3 md:gap-4 overflow-hidden">
       <Card className="p-0 shadow-elevated overflow-hidden min-h-0">
@@ -84,7 +148,7 @@ export default function BuildingPanel({
               <div className="relative h-full min-h-0">
                 <BuildingCanvas
                   mode={mode}
-                  block={selectedBlock}
+                  block={selectedBlock ?? undefined} // <-- convert null -> undefined
                   selectedFlat={selectedFlat}
                   filterBhk={filterBhk}
                   filteredFlats={filteredFlats}
@@ -93,7 +157,7 @@ export default function BuildingPanel({
                 <div className="absolute top-3 left-3">
                   <div className="inline-flex items-center gap-2 rounded-full bg-secondary text-secondary-foreground px-3 py-1 text-xs shadow-subtle">
                     <Blocks className="h-4 w-4 opacity-70" />
-                    <span className="max-w-[40vw] truncate">{selectedBlock.name}</span>
+                    <span className="max-w-[40vw] truncate">{selectedBlock!.name}</span>
                   </div>
                 </div>
               </div>
@@ -134,9 +198,7 @@ export default function BuildingPanel({
                     <CarouselNext />
                   </Carousel>
                 ) : (
-                  <div className="text-sm text-muted-foreground text-center px-3">
-                    Select a unit to view floor plans
-                  </div>
+                  <div className="text-sm text-muted-foreground text-center px-3">Select a unit to view floor plans</div>
                 )}
               </div>
             </TabsContent>
@@ -150,10 +212,10 @@ export default function BuildingPanel({
       >
         <div className="space-y-1">
           <div className="text-sm text-muted-foreground">
-            {selectedProject.name} • {selectedBlock.name}
+            {selectedProject.name} • {selectedBlock!.name}
           </div>
           <div className="text-sm">
-            Floors: <span className="font-medium">{Object.keys(selectedBlock.floors).length}</span> •{" "}
+            Floors: <span className="font-medium">{Object.keys(selectedBlock!.floors).length}</span> •{" "}
             Units: <span className="font-medium">{allFlats.length}</span>
           </div>
         </div>
