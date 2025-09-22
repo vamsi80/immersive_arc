@@ -17,12 +17,12 @@ type Props = {
   setQuery: (v: string) => void;
   filterBhk: BHK | "All";
   setFilterBhk: (v: BHK | "All") => void;
-  filterFloor: string | "All"; // using string to match floorId
+  filterFloor: string | "All";
   setFilterFloor: (v: string | "All") => void;
   filterStatus: FlatStatus | "All";
   setFilterStatus: (v: FlatStatus | "All") => void;
   reset: () => void;
-  selectedBlock: Block;
+  selectedBlock?: Block | null;
 };
 
 export default function Filters({
@@ -37,8 +37,7 @@ export default function Filters({
   reset,
   selectedBlock,
 }: Props) {
-  const allFloors = Object.keys(selectedBlock.floors);
-
+  const allFloors = selectedBlock? Object.keys(selectedBlock.floors): [];
   return (
     <Card className="p-3 md:p-4 shadow-subtle">
       {/* grid: stack on mobile, 3-up on md+ */}

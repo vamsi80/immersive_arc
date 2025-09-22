@@ -13,15 +13,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminToggle } from "./toggles/AdminToggle";
 
 type Props = {
   mode: BuildingMode;
   setMode: (mode: BuildingMode) => void;
   projectName: string;
   blockName: string;
+  setIsAdmin: (v: boolean) => void;
+  isAdmin: boolean;
 };
 
-export default function Topbar({ projectName, blockName }: Props) {
+export default function Topbar({ projectName, blockName, setIsAdmin, isAdmin }: Props) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -54,6 +57,8 @@ export default function Topbar({ projectName, blockName }: Props) {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
+        <AdminToggle isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
+
         {/* Theme Toggle */}
         <Button
           variant="ghost"

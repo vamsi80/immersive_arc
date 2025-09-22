@@ -72,7 +72,7 @@ export default function BuildingPanel({
           <div className="text-center px-4">
             <div className="mb-3 text-lg font-semibold">No blocks available</div>
             <p className="text-sm text-muted-foreground mb-4">
-              This society doesn't have any blocks yet. Add a block to view 3D models and units.
+              This society doesn&apos;t have any blocks yet. Add a block to view 3D models and units.
             </p>
 
             {isAdmin ? (

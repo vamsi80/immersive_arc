@@ -35,10 +35,11 @@ type Props = {
   projects: Project[];
   selectedProjectId: string;
   onSelectProject: (id: string) => void;
-  selectedBlockId: string;
-  onSelectBlock: (id: string) => void;
+  selectedBlockId: string | null;
+  onSelectBlock: (id: string | null) => void;
   onAddProject?: () => void;
   onAddBlock?: (projectId: string) => void;
+  isAdmin?: boolean;
 };
 
 export default function SidebarNav({
@@ -49,6 +50,7 @@ export default function SidebarNav({
   onSelectBlock,
   onAddProject,
   onAddBlock,
+  isAdmin,
 }: Props) {
   const selectedProject = projects.find((p) => p.projectId === selectedProjectId)!;
 
@@ -88,16 +90,17 @@ export default function SidebarNav({
               <SidebarGroupLabel className="group-data-[collapsible=icon]/sidebar:sr-only">
                 Societies
               </SidebarGroupLabel>
-              {onAddProject && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  onClick={onAddProject}
+              {/* Admin-only add button next to Societies header */}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => onAddProject?.()}
+                  title="Add society"
                   aria-label="Add society"
+                  className="rounded p-1 hover:bg-accent"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               )}
             </div>
 
@@ -127,16 +130,16 @@ export default function SidebarNav({
               <SidebarGroupLabel className="group-data-[collapsible=icon]/sidebar:sr-only">
                 Blocks
               </SidebarGroupLabel>
-              {onAddBlock && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  onClick={() => onAddBlock(selectedProjectId)}
-                  aria-label="Add block"
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => onAddProject?.()}
+                  title="Add society"
+                  aria-label="Add society"
+                  className="rounded p-1 hover:bg-accent"
                 >
                   <Plus className="h-4 w-4" />
-                </Button>
+                </button>
               )}
             </div>
 
@@ -225,7 +228,7 @@ function MobileIconRail({
 }: {
   projects: Project[];
   selectedProjectId: string;
-  selectedBlockId: string;
+  selectedBlockId: string | null;
   onSelectProject: (id: string) => void; // (not used here but kept for parity)
   onSelectBlock: (id: string) => void;
 }) {

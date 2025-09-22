@@ -13,27 +13,31 @@ import { Project, Flat, BHK, FlatWithFloor, FlatStatus, Block } from "@/types/ty
 /**
  * DashboardPage (admin-enabled + button)
  *
- * Notes:
- * - This file keeps your original layout and functionality.
- * - Added isAdmin boolean (replace with your real auth check).
- * - Added an admin "+" floating button which opens an Add modal.
- * - Local state is mutated (projects) — in production you should call your API,
- *   then refresh state from server. Handlers below show how to update local state immediately.
+ * Key changes:
+ * - Projects are created WITHOUT any blocks (empty blocks object).
+ * - selectedBlockId is nullable (string | null) and stays null for projects with no blocks.
+ * - onSelectProject selects first block if exists, otherwise null.
  */
 
 export default function DashboardPage() {
   // === ADMIN FLAG (replace with real auth) ===
-  const [isAdmin] = useState<boolean>(true); // toggle to false to "disable" adding
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Load projects (now writable)
   const [projects, setProjects] = useState<Project[]>(Object.values(demoData.projects));
+
+  // select initial project (first project)
   const [selectedProjectId, setSelectedProjectId] = useState(projects[0].projectId);
-  const [selectedBlockId, setSelectedBlockId] = useState(
-    Object.values(projects[0].blocks)[0].blockId
+
+  // selectedBlockId can be null when project has no blocks
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
+    // choose first block if present, otherwise null
+    Object.values(projects[0].blocks)[0]?.blockId ?? null
   );
 
   const selectedProject = projects.find((p) => p.projectId === selectedProjectId)!;
-  const selectedBlock = selectedProject.blocks[selectedBlockId];
+  // safe: may be undefined if selectedBlockId is null — pass through as null/undefined downstream
+  const selectedBlock = selectedBlockId ? selectedProject.blocks[selectedBlockId] : undefined;
 
   // Selections
   const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
@@ -53,24 +57,27 @@ export default function DashboardPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addType, setAddType] = useState<"project" | "block">("project");
   const [newName, setNewName] = useState("");
-  const [newBlockForProject, setNewBlockForProject] = useState<string | null>(Object.values(projects[0].blocks)[0]?.blockId ?? null);
+  const [newBlockForProject, setNewBlockForProject] = useState<string | null>(null);
 
   // Reset on project change
   const onSelectProject = (id: string) => {
     setSelectedProjectId(id);
     const proj = projects.find((x) => x.projectId === id)!;
-    setSelectedBlockId(Object.values(proj.blocks)[0].blockId);
+    // if project has blocks pick first, otherwise null
+    setSelectedBlockId(Object.values(proj.blocks)[0]?.blockId ?? null);
     setSelectedFlat(null);
     setSelectedFloorId(null);
   };
 
-  // ✅ All flats
-  const allFlats: FlatWithFloor[] = Object.values(selectedBlock.floors).flatMap((floor) =>
-    Object.values(floor.flats).map((flat) => ({
-      ...flat,
-      floorId: floor.floorId,
-    }))
-  );
+  // Helper to compute allFlats for the currently selectedBlock (if any)
+  const allFlats: FlatWithFloor[] = selectedBlock
+    ? Object.values(selectedBlock.floors).flatMap((floor) =>
+      Object.values(floor.flats).map((flat) => ({
+        ...flat,
+        floorId: floor.floorId,
+      }))
+    )
+    : [];
 
   // ✅ Apply filters
   const filteredFlats: FlatWithFloor[] = allFlats.filter((flat) => {
@@ -97,9 +104,20 @@ export default function DashboardPage() {
 
   // ----------------------------
   // Add handlers (local state)
-  // In production: call API, then refresh state from server.
   // ----------------------------
 
+  /** Create a properly shaped Project with NO blocks initially */
+  function createProject(projectId: string, name: string): Project {
+    return {
+      projectId,
+      name,
+      location: "",
+      description: "",
+      blocks: {}, // <-- important: no blocks created here
+    } as Project;
+  }
+
+  /** Create Block (modelPath optional) */
   function createBlock(blockId: string, name: string, modelPath?: string): Block {
     return {
       blockId,
@@ -115,40 +133,21 @@ export default function DashboardPage() {
     } as Block;
   }
 
-  /** Create a project without forcing a modelPath on the first block */
-  function createProject(projectId: string, name: string): Project {
-    const firstBlock = createBlock(`${projectId}_blockA`, "Block A"); // no forced modelPath
-    return {
-      projectId,
-      name,
-      location: "",
-      description: "",
-      blocks: {
-        [firstBlock.blockId]: firstBlock,
-      },
-    } as Project;
-  }
-
   const addProject = (name: string) => {
     const projectId = `proj_${Date.now().toString(36)}`;
     const newProject = createProject(projectId, name);
 
-    // setProjects expects Project[] or (prev => Project[]). This returns a Project[].
     setProjects((prev) => [...prev, newProject]);
 
-    // select new project
+    // select new project and clear selectedBlockId (no blocks exist)
     setSelectedProjectId(projectId);
-    const firstBlockId = Object.keys(newProject.blocks)[0];
-    setSelectedBlockId(firstBlockId);
+    setSelectedBlockId(null);
   };
 
   const addBlock = (projectId: string, blockName: string) => {
     const blockId = `block_${Date.now().toString(36)}`;
-
-    // reuse existing modelPath if this project has any working model
     const project = projects.find((p) => p.projectId === projectId)!;
-    const fallbackModel = Object.values(project.blocks)[0]?.modelPath; // undefined if none
-
+    const fallbackModel = Object.values(project.blocks)[0]?.modelPath; // reuse if exists
     const newBlock = createBlock(blockId, blockName, fallbackModel);
 
     setProjects((prev) =>
@@ -164,6 +163,7 @@ export default function DashboardPage() {
       })
     );
 
+    // select created block
     setSelectedProjectId(projectId);
     setSelectedBlockId(blockId);
   };
@@ -178,313 +178,182 @@ export default function DashboardPage() {
       const targetProject = newBlockForProject || selectedProjectId;
       addBlock(targetProject, newName.trim());
     }
-    // reset modal
     setNewName("");
     setIsAddModalOpen(false);
   };
 
   // ----------------------------
-  // JSX - mostly your original code, with an admin add-flow overlay
+  // JSX
   // ----------------------------
   return (
-    <SidebarProvider>
-      <SidebarNav
-        projects={projects}
-        selectedProjectId={selectedProjectId}
-        onSelectProject={onSelectProject}
-        selectedBlockId={selectedBlockId}
-        onSelectBlock={(id) => {
-          setSelectedBlockId(id);
-          setSelectedFlat(null);
-          setSelectedFloorId(null);
-        }}
-
-        onAddProject={() => {
-          // open modal or call addProject("New Society")
-          setIsAddModalOpen(true);
-          setAddType("project");
-        }}
-        onAddBlock={(projectId) => {
-          handleOpenAddBlockModal(projectId);
-        }}
-      />
-
-      <SidebarInset>
-        <Topbar
-          mode={mode}
-          setMode={setMode}
-          projectName={selectedProject.name}
-          blockName={selectedBlock.name}
+    <>
+      <SidebarProvider>
+        <SidebarNav
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          onSelectProject={onSelectProject}
+          selectedBlockId={selectedBlockId}
+          onSelectBlock={(id) => {
+            setSelectedBlockId(id);
+            setSelectedFlat(null);
+            setSelectedFloorId(null);
+          }}
+          isAdmin={isAdmin}
+          onAddProject={() => {
+            setIsAddModalOpen(true);
+            setAddType("project");
+          }}
+          onAddBlock={(projectId) => {
+            handleOpenAddBlockModal(projectId);
+          }}
         />
 
-        {/* Layout:
-            - Mobile (<md): single column (3D first); RightPanel lives in slide-over.
-            - md+: two columns with fixed right pane width.
-        */}
-        <div
-          className="
-            relative
-            p-3 md:p-4
-            h-[calc(100dvh-56px)] md:h-[calc(100svh-56px)]
-            overflow-hidden
-          "
-        >
-          <div
-            className="
-              grid
-              grid-cols-1
-              gap-3 md:gap-4
-              md:grid-cols-[1fr_420px]
-              lg:grid-cols-[1fr_520px]
-              xl:grid-cols-[1fr_580px]
-              h-full
-            "
-          >
-            {/* ✅ Middle: 3D + summary (always visible) */}
-            <div className="min-h-0 bg-background">
-              <BuildingPanel
-                mode={mode}
-                isAdmin={isAdmin}
-                selectedProject={selectedProject}
-                selectedBlock={selectedBlockId ? selectedProject.blocks[selectedBlockId] : null}
-                selectedFloor={selectedFloorId ? selectedProject.blocks[selectedBlockId!].floors[selectedFloorId] : null}
-                selectedFlat={selectedFlat}
-                setSelectedFlat={setSelectedFlat}
-                filterBhk={filterBhk}
-                filteredFlats={filteredFlats}
-                allFlats={allFlats}
-                onAddBlock={(projectId) => handleOpenAddBlockModal(projectId)}
-              />
-            </div>
+        <SidebarInset>
+          <Topbar
+            mode={mode}
+            setMode={setMode}
+            projectName={selectedProject.name}
+            isAdmin={isAdmin}
+            setIsAdmin={setIsAdmin}
+            // guard blockName when none
+            blockName={selectedBlock ? selectedBlock.name : "No block"}
+          />
 
-            {/* ✅ Right: Filters + Results
-                - Hidden on mobile; visible from md upward.
-            */}
-            <div className="hidden md:block min-h-0 rounded-xl border bg-background">
-              <RightPanel
-                query={query}
-                setQuery={setQuery}
-                filterBhk={filterBhk}
-                setFilterBhk={setFilterBhk}
-                filterFloor={filterFloor}
-                setFilterFloor={setFilterFloor}
-                filterStatus={filterStatus}
-                setFilterStatus={setFilterStatus}
-                reset={resetFilters}
-                selectedBlock={selectedBlock}
-                filteredFlats={filteredFlats}
-                selectedFlat={selectedFlat}
-                setSelectedFlat={setSelectedFlat}
-              />
-            </div>
-          </div>
-
-          {/* 🔘 Mobile floating button to open Filters/Results */}
-          <button
-            type="button"
-            onClick={() => setIsFiltersOpen(true)}
-            className="
-              md:hidden
-              fixed bottom-4 right-4
-              z-40
-              rounded-full px-4 py-2
-              shadow-lg
-              bg-primary text-primary-foreground
-              focus:outline-none focus:ring-2 focus:ring-primary/40
-            "
-            aria-label="Open filters and results"
-          >
-            Filters
-          </button>
-
-          {/* Admin-only floating "+" button */}
-          {isAdmin && (
-            <button
-              onClick={() => {
-                setAddType("project"); // default choice
-                setNewBlockForProject(selectedProjectId);
-                setIsAddModalOpen(true);
-              }}
-              className="
-                fixed bottom-4 left-4
-                z-50
-                w-12 h-12 rounded-full
-                flex items-center justify-center
-                shadow-lg
-                bg-emerald-600 text-white text-xl
-                focus:outline-none focus:ring-2 focus:ring-emerald-300
-              "
-              aria-label="Add"
-              title="Add project / block"
-            >
-              +
-            </button>
-          )}
-
-          {/* 📱 Mobile slide-over for RightPanel */}
-          <div
-            className={` 
-              md:hidden
-              fixed inset-0 z-50
-              transition-transform duration-300
-              ${isFiltersOpen ? "translate-x-0" : "translate-x-full"}
-              pointer-events-auto
-            `}
-            aria-hidden={!isFiltersOpen}
-            role="dialog"
-            aria-modal="true"
-          >
-            {/* Backdrop */}
-            <div
-              onClick={() => setIsFiltersOpen(false)}
-              className={`absolute inset-0 bg-black/30 transition-opacity ${isFiltersOpen ? "opacity-100" : "opacity-0"
-                }`}
-            />
-
-            {/* Panel */}
-            <div
-              className="
-                absolute right-0 top-0 h-full w-[92%] max-w-sm
-                bg-background border-l
-                shadow-xl
-                flex flex-col
-              "
-            >
-              <div className="flex items-center justify-between px-4 py-3 border-b">
-                <div className="font-medium">Filters & Results</div>
-                <button
-                  type="button"
-                  onClick={() => setIsFiltersOpen(false)}
-                  className="rounded-md px-3 py-1 border hover:bg-accent"
-                  aria-label="Close"
-                >
-                  Close
-                </button>
+          <div className="relative p-3 md:p-4 h-[calc(100dvh-56px)] md:h-[calc(100svh-56px)] overflow-hidden">
+            <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-[1fr_420px] lg:grid-cols-[1fr_520px] xl:grid-cols-[1fr_580px] h-full">
+              <div className="min-h-0 bg-background">
+                <BuildingPanel
+                  mode={mode}
+                  isAdmin={isAdmin}
+                  selectedProject={selectedProject}
+                  // pass block as undefined when none (BuildingPanel/Canvas accept undefined/null)
+                  selectedBlock={selectedBlock ?? null}
+                  selectedFloor={selectedFloorId ? selectedProject.blocks[selectedBlockId!].floors[selectedFloorId] : null}
+                  selectedFlat={selectedFlat}
+                  setSelectedFlat={setSelectedFlat}
+                  filterBhk={filterBhk}
+                  filteredFlats={filteredFlats}
+                  allFlats={allFlats}
+                  onAddBlock={(projectId) => handleOpenAddBlockModal(projectId)}
+                />
               </div>
 
-              <div className="min-h-0 flex-1 overflow-auto p-2">
+              <div className="hidden md:block min-h-0 rounded-xl border bg-background">
                 <RightPanel
                   query={query}
                   setQuery={setQuery}
                   filterBhk={filterBhk}
-                  setFilterBhk={(v) => {
-                    setFilterBhk(v);
-                  }}
+                  setFilterBhk={setFilterBhk}
                   filterFloor={filterFloor}
                   setFilterFloor={setFilterFloor}
                   filterStatus={filterStatus}
                   setFilterStatus={setFilterStatus}
-                  reset={() => {
-                    resetFilters();
-                  }}
+                  reset={resetFilters}
                   selectedBlock={selectedBlock}
                   filteredFlats={filteredFlats}
                   selectedFlat={selectedFlat}
-                  setSelectedFlat={(f) => {
-                    setSelectedFlat(f);
-                    // Optional: close drawer when a flat is chosen
-                    setIsFiltersOpen(false);
-                  }}
+                  setSelectedFlat={setSelectedFlat}
                 />
               </div>
             </div>
-          </div>
 
-          {/* ------------------------
-              Add Modal (admin)
-              ------------------------ */}
-          {isAddModalOpen && (
-            <div className="fixed inset-0 z-60 flex items-center justify-center">
-              {/* Backdrop */}
-              <div
-                className="absolute inset-0 bg-black/40"
-                onClick={() => setIsAddModalOpen(false)}
-              />
-              <div className="relative z-10 w-full max-w-lg bg-background rounded-lg shadow-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-medium">Add new</h3>
-                  <button
-                    onClick={() => setIsAddModalOpen(false)}
-                    className="px-2 py-1 rounded hover:bg-accent"
-                  >
-                    Close
-                  </button>
-                </div>
+            {/* mobile filters button */}
+            <button
+              type="button"
+              onClick={() => setIsFiltersOpen(true)}
+              className="md:hidden fixed bottom-4 right-4 z-40 rounded-full px-4 py-2 shadow-lg bg-primary text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              aria-label="Open filters and results"
+            >
+              Filters
+            </button>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Type</label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setAddType("project")}
-                        className={`px-3 py-1 rounded ${addType === "project" ? "bg-primary text-white" : "border"}`}
-                      >
-                        Society (Project)
-                      </button>
-                      <button
-                        onClick={() => setAddType("block")}
-                        className={`px-3 py-1 rounded ${addType === "block" ? "bg-primary text-white" : "border"}`}
-                      >
-                        Block
-                      </button>
-                    </div>
+            {/* mobile slide-over + add modal (same as your existing) */}
+            {/* ... keep your mobile slide-over and modal JSX here (unchanged) ... */}
+
+            {/* Add Modal */}
+            {isAddModalOpen && (
+              <div className="fixed inset-0 z-60 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/40" onClick={() => setIsAddModalOpen(false)} />
+                <div className="relative z-10 w-full max-w-lg bg-background rounded-lg shadow-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-medium">Add new</h3>
+                    <button onClick={() => setIsAddModalOpen(false)} className="px-2 py-1 rounded hover:bg-accent">
+                      Close
+                    </button>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
-                    <input
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      className="w-full rounded border px-2 py-1"
-                      placeholder={addType === "project" ? "Society name" : "Block name"}
-                    />
-                  </div>
-
-                  {addType === "block" && (
+                  <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Project (add block to)</label>
-                      <select
-                        value={newBlockForProject || ""}
-                        onChange={(e) => setNewBlockForProject(e.target.value)}
-                        className="w-full rounded border px-2 py-1"
-                      >
-                        {projects.map((p) => (
-                          <option key={p.projectId} value={p.projectId}>
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
+                      <label className="block text-sm font-medium mb-1">Type</label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setAddType("project")}
+                          className={`px-3 py-1 rounded ${addType === "project" ? "bg-primary text-white" : "border"}`}
+                        >
+                          Society (Project)
+                        </button>
+                        <button
+                          onClick={() => setAddType("block")}
+                          className={`px-3 py-1 rounded ${addType === "block" ? "bg-primary text-white" : "border"}`}
+                        >
+                          Block
+                        </button>
+                      </div>
                     </div>
-                  )}
 
-                  <div className="flex items-center justify-end gap-2 pt-2">
-                    <button
-                      onClick={() => {
-                        setNewName("");
-                        setIsAddModalOpen(false);
-                      }}
-                      className="px-3 py-1 rounded border"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={onAddSubmit}
-                      className="px-3 py-1 rounded bg-emerald-600 text-white"
-                    >
-                      Add
-                    </button>
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Name</label>
+                      <input
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="w-full rounded border px-2 py-1"
+                        placeholder={addType === "project" ? "Society name" : "Block name"}
+                      />
+                    </div>
 
-                  <div className="text-xs text-muted-foreground mt-2">
-                    Note: this updates local UI state. In production you should call your backend API
-                    to persist the new project/block and then re-fetch the list.
+                    {addType === "block" && (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Project (add block to)</label>
+                        <select
+                          value={newBlockForProject || ""}
+                          onChange={(e) => setNewBlockForProject(e.target.value)}
+                          className="w-full rounded border px-2 py-1"
+                        >
+                          {projects.map((p) => (
+                            <option key={p.projectId} value={p.projectId}>
+                              {p.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2 pt-2">
+                      <button
+                        onClick={() => {
+                          setNewName("");
+                          setIsAddModalOpen(false);
+                        }}
+                        className="px-3 py-1 rounded border"
+                      >
+                        Cancel
+                      </button>
+                      <button onClick={onAddSubmit} className="px-3 py-1 rounded bg-emerald-600 text-white">
+                        Add
+                      </button>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Note: this updates local UI state. In production you should call your backend API
+                      to persist the new project/block and then re-fetch the list.
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+            )}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   );
 }

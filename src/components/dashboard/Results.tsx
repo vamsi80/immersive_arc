@@ -6,7 +6,12 @@ import { cn } from "@/lib/utils";
 import { Block, Flat, BHK, FlatWithFloor } from "@/types/types";
 import { BedDouble, Bath, Sun, UtensilsCrossed, Sofa, User } from "lucide-react";
 
-function getAllFlats(block: Block): FlatWithFloor[] {
+/**
+ * Accept a possibly-missing block and return its flats (safely).
+ * Previously this assumed `block: Block` and caused TS errors when we passed null/undefined.
+ */
+function getAllFlats(block?: Block | null): FlatWithFloor[] {
+  if (!block) return [];
   return Object.values(block.floors).flatMap((floor) =>
     Object.values(floor.flats).map((flat) => ({
       ...flat,
@@ -18,9 +23,10 @@ function getAllFlats(block: Block): FlatWithFloor[] {
 type Props = {
   filteredFlats: FlatWithFloor[];
   selectedFlat: Flat | null;
-  setSelectedFlat: (u: Flat) => void;
+  // setSelectedFlat can receive null when clearing selection (be defensive)
+  setSelectedFlat: (u: Flat | null) => void;
   filterBhk: BHK | "All";
-  selectedBlock: Block;
+  selectedBlock?: Block | null;
   className?: string;
 };
 
@@ -32,6 +38,7 @@ export default function Results({
   selectedBlock,
   className,
 }: Props) {
+  // Use the safe helper that accepts null/undefined
   const allFlats = getAllFlats(selectedBlock);
 
   return (
@@ -90,17 +97,11 @@ export default function Results({
                   {f.bhk}
                 </Badge>
               </div>
-              <div className="text-xs text-muted-foreground">
-                Floor {f.floorId.replace("floor_", "")}
-              </div>
+              <div className="text-xs text-muted-foreground">Floor {f.floorId.replace("floor_", "")}</div>
               <div
                 className={cn(
                   "mt-1 text-[11px]",
-                  f.status === "available"
-                    ? "text-green-600"
-                    : f.status === "sold"
-                    ? "text-red-600"
-                    : "text-amber-600"
+                  f.status === "available" ? "text-green-600" : f.status === "sold" ? "text-red-600" : "text-amber-600"
                 )}
               >
                 {f.status}

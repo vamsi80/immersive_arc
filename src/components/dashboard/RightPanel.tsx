@@ -17,7 +17,7 @@ type Props = {
   reset: () => void;
 
   // Data + selection
-  selectedBlock: Block;
+  selectedBlock?: Block | null;
   filteredFlats: FlatWithFloor[];
   selectedFlat: Flat | null;
   setSelectedFlat: (f: Flat | null) => void;
